@@ -132,7 +132,7 @@ https://cdn.discordapp.com/attachments/856926964094337047/968536776484487218/unk
 		for (const [id, attachment] of message.attachments) {
 			if (attachment.contentType?.startsWith("video") || attachment.contentType?.startsWith("image"))
 				await hashFile(attachment.url, message);
-			if (attachment.name.toLowerCase().match("reddit") || redditFilenameRegex.test(attachment.name))
+			if (attachment.name.toLowerCase().match("reddit") || attachment.name.toLowerCase().match("RDT") || redditFilenameRegex.test(attachment.name))
 				reddit = true;
 		}
 	}
