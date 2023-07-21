@@ -48,7 +48,7 @@ export async function sendMessages(channelID: string) {
 		"H": "🇭",
 		"I": "🇮"
 	};
-	const klasy = ["H", "H", "G", "I"];
+	const klasy = ["G", "I", "H", "G"];
 	const klasyName = ["Pierwsze", "Drugie", "Trzecie", "Czwarte"];
 	const colors = ["#E09F7D", "#EF5D60", "#EC4067", "#A01A7D"];
 
@@ -97,7 +97,7 @@ export async function editMessage(channelID: string, msgID: string) {
 
 	let desc = "Kliknij odpowiednią reakcję, żeby dostać rolę swojej klasy\n\n";
 	for (let letter = "A"; letter <= "I"; letter = String.fromCharCode(letter.charCodeAt(0) + 1)) {
-		if (letter != "H") 
+		if (letter != "H")
 			desc += `${letters[letter]} - 1${letter}\n`;
 	}
 
@@ -115,4 +115,48 @@ export async function addReaction(channelID: string, msgID: string) {
 	const channel = client.channels.cache.get(channelID) as TextChannel;
 	const message = await channel.messages.fetch(msgID);
 	await message.react("🇮");
+}
+
+export async function upgradeRoles(guildID: string, graduateRoleId: string) {
+	const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+	const guild = await client.guilds.fetch(guildID);
+	await guild.members.fetch();
+	const graduateRole = guild.roles.cache.find(role => role.id == graduateRoleId);
+	if (graduateRole == undefined)
+		throw new Error("Graduate role not found");
+
+	for (const letter of letters) {
+		const role = guild.roles.cache.find(role => role.name == `4${letter}`);
+		if (role == undefined)
+			continue;
+
+		for (const member of role.members.values()) {
+			console.log(member.user.username);
+			await member.roles.add(graduateRole);
+		}
+		await role.delete();
+	}
+	console.log("Removed 4th grade roles");
+
+	for (let num = 3; num >= 1; num--) {
+		for (const letter of letters) {
+			const role = guild.roles.cache.find(role => role.name == `${num}${letter}`);
+			console.log(num, letter);
+			if (role == undefined)
+				continue;
+
+			await role.setName(`${num + 1}${letter}`);
+		}
+	}
+	console.log("Upgraded roles");
+}
+
+export async function createFirstYearRoles(guildID: string, maxLetter: string) {
+	const guild = await client.guilds.fetch("930512190220435516");
+
+	for (let letter = "A"; letter <= maxLetter; letter = String.fromCharCode(letter.charCodeAt(0) + 1)) {
+		await guild.roles.create({
+			name: `1${letter}`,
+		});
+	}
 }

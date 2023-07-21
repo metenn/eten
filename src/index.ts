@@ -16,7 +16,7 @@ import { init } from "./openai";
 import initRSS from "./lib/rssFeed";
 
 // staszic stuff
-import { sendMessages, editMessage, addReaction, sendSzczesliwyNumerekMessages, createSzczesliwyNumerekRoles } from "./lib/staszic/createReactionRoleMessages";
+import { sendMessages, editMessage, addReaction, sendSzczesliwyNumerekMessages, createSzczesliwyNumerekRoles, upgradeRoles, createFirstYearRoles } from "./lib/staszic/createReactionRoleMessages";
 
 // mimuw
 import { create, createReactionMessages } from "./lib/mimuw/create";
@@ -121,6 +121,11 @@ client.once("ready", async () => {
 	// createReactionMessages("1029111804061818941");
 	// sendSzczesliwyNumerekMessages("1079803173717430332");
 	// createSzczesliwyNumerekRoles();
+
+	// Staszic 2023/2024:
+	// upgradeRoles("930512190220435516", "1000439399110148227");
+	// createFirstYearRoles("930512190220435516", "G");
+	// sendMessages("932694140783833128");
 });
 
 client.on("messageReactionAdd", discordEvents.messageReactionAdd);
