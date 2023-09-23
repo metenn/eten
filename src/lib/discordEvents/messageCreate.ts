@@ -155,7 +155,7 @@ https://cdn.discordapp.com/attachments/856926964094337047/968536776484487218/unk
 	}
 	// wkurwiajace w chuj
 
-	if (reddit) {
+	if (reddit && false) {
 		message.reply({ content: "https://cdn.discordapp.com/attachments/788126323180044339/980463018800459866/Ew_You_Must_Be_From_Reddit_pl7RIIHK9EE.mp4" });
 	}
 }
