@@ -44,9 +44,7 @@ export async function sendNawiasowanie(message: Message) {
 		if (nawiasyHeap[i] == "{")
 			res += "}";
 	}
-	if (res.length == 0) {
-		nie(message);
+	if (res.length == 0)
 		return;
-	}
 	message.channel.send(res);
 }
