@@ -6,6 +6,7 @@ import fs from "fs";
 import { Client, MessageAttachment, TextChannel } from "discord.js";
 import config from "../config.json";
 import stream from "stream";
+import rotateAvatar from "./rotateAvatar";
 const streamPipeline = util.promisify(stream.pipeline);
 // const streamPipeline = util.promisify(require('stream').pipeline)
 let client: Client<boolean>;
@@ -79,6 +80,11 @@ const dailyJob = new cron.CronJob(
 	"Europe/Warsaw"
 );
 
+const rotateAvatarJob = new cron.CronJob(
+	"0 0 0 * * *",
+	rotateAvatar
+)
+
 function cronImageSend() {
 	if (config.cronImageSend.eneabled) {
 		// Co? \/
@@ -109,4 +115,5 @@ export default function(cl: Client<boolean>) {
 	client = cl;
 	dailyJob.start();
 	cronImageSend();
+	rotateAvatarJob.start();
 }
