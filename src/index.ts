@@ -20,6 +20,7 @@ import { sendMessages, editMessage, addReaction, sendSzczesliwyNumerekMessages, 
 
 // mimuw
 import { create, createReactionMessages } from "./lib/mimuw/create";
+import rotateAvatar from "./lib/rotateAvatar";
 
 // LOL
 type SlashCommandFunction = ((interaction: Discord.CommandInteraction | Discord.ButtonInteraction | Discord.Message | Discord.ContextMenuInteraction, args?: string) => Promise<unknown>);
@@ -116,6 +117,7 @@ client.once("ready", async () => {
 	incrementDays();
 	randomSounds();
 	console.log("Ready!");
+	// await rotateAvatar();
 
 	// create();
 	// createReactionMessages("1029111804061818941");

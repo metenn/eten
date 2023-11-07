@@ -46,5 +46,8 @@ export async function sendNawiasowanie(message: Message) {
 	}
 	if (res.length == 0)
 		return;
-	message.channel.send(res);
+	if (res.length > 2000)
+		message.channel.send("chuj ci w dupe");
+	else
+		message.channel.send(res);
 }
