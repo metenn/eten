@@ -161,4 +161,8 @@ https://cdn.discordapp.com/attachments/856926964094337047/968536776484487218/unk
 	}
 
 	sendNawiasowanie(message);
+
+	if (message.content.toLowerCase() == "nullpo") {
+		message.channel.send("gah!");
+	}
 }
