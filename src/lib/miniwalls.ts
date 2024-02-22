@@ -10,10 +10,10 @@ async function getCount() {
 	if (json.success === false) {
 		console.error("Failed to get player count");
 		console.error(json);
-		return;
+		return 0;
 	}
 
-	return json.games.ARCADE.modes.MINIWALLS || 0;
+	return json.games.ARCADE.modes.MINI_WALLS || 0;
 }
 
 let threshold = false;
