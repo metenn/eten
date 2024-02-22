@@ -103,7 +103,7 @@ client.once("ready", async () => {
 		throw new Error("user does not exist on client");
 	console.log(`Logged in as ${client.user.tag}`);
 	client.user.setStatus("online");
-	client.user.setActivity("💀", { type: "PLAYING" });
+	// client.user.setActivity("💀", { type: "PLAYING" });
 	await updateSlashCommands();
 
 	createRequiredFiles();

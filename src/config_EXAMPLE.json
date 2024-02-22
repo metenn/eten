@@ -6,7 +6,7 @@
 		"apiToken": "your openAI api token",
 		"organizationId": "your openAI organization token"
 	},
-	
+
 	"chatGPT": {
 		"eneabled": true,
 		"email": "your_chat_gpt_email",
@@ -20,6 +20,9 @@
 	"librusLogin": "user@domain.tld",
 	"librusPass": "password",
 	"pushDevice": "12345678",
+
+	"hyixelApiKey": "gaming",
+	"miniwallsChannel": "2137",
 
 	"adminID": ["admin1 user id", "admin2 user id"],
 
@@ -35,7 +38,7 @@
 		"guild": "guild id",
 		"channel": "channel id"
 	},
-	
+
 	"autoMemesChannel": "channel id",
 	"allowedBoardsForTracking": {
 		"wsg": "/wsg/ - Worksafe Gif",
@@ -65,7 +68,7 @@
 		"uploadURL": "http://your.website.com/upload",
 		"uploadPassword": "password"
 	},
-	
+
 	"pilkarzykiBot": {
 		"maxDepth": 5,
 		"evaluationFunctionConfig": [
@@ -80,7 +83,7 @@
 			{
 				"condition": "depth==2",
 				"path": [
-					"../../evaluationFunctions/evaluationBFS.js", "../../evaluationFunctions/evaluationBFSReverse.js", 
+					"../../evaluationFunctions/evaluationBFS.js", "../../evaluationFunctions/evaluationBFSReverse.js",
 					"../../evaluationFunctions/evaluationBFSCubic.js", "../../evaluationFunctions/evaluationBFSCubicReverse.js",
 					"../../evaluationFunctions/evaluationQuad.js"
 				]

@@ -7,6 +7,7 @@ import { Client, MessageAttachment, TextChannel } from "discord.js";
 import config from "../config.json";
 import stream from "stream";
 import rotateAvatar from "./rotateAvatar";
+import miniwalls from "./miniwalls";
 const streamPipeline = util.promisify(stream.pipeline);
 // const streamPipeline = util.promisify(require('stream').pipeline)
 let client: Client<boolean>;
@@ -116,4 +117,5 @@ export default function(cl: Client<boolean>) {
 	dailyJob.start();
 	cronImageSend();
 	rotateAvatarJob.start();
+	miniwalls();
 }
