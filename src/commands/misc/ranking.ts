@@ -36,7 +36,7 @@ export async function execute(interaction: CommandInteraction) {
 	// why
 	const fullRanking: any = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
 	const ranking: IRanking = fullRanking[type];
-	const rank = [];
+	let rank = [];
 
 
 	let desc = "";
@@ -47,6 +47,7 @@ export async function execute(interaction: CommandInteraction) {
 		rank.sort(function(a, b) {
 			return b["len"] - a["len"];
 		});
+		rank = rank.slice(50);
 
 		if (type == "jajco") {
 			for (let i = 0; i < rank.length; i++) {
