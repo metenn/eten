@@ -47,7 +47,9 @@ export async function execute(interaction: CommandInteraction) {
 		rank.sort(function(a, b) {
 			return b["len"] - a["len"];
 		});
-		rank = rank.slice(50);
+		console.log(rank);
+		rank = rank.slice(0, 50);
+		console.log(rank);
 
 		if (type == "jajco") {
 			for (let i = 0; i < rank.length; i++) {
