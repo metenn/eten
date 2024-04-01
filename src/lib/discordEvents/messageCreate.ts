@@ -165,4 +165,8 @@ https://cdn.discordapp.com/attachments/856926964094337047/968536776484487218/unk
 	if (message.content.toLowerCase() == "nullpo") {
 		message.channel.send("gah!");
 	}
+
+	if (message.content.toLowerCase().match("skibidi toilet")) {
+		message.reply("https://cdn.discordapp.com/attachments/849352541472817193/1162036956314742865/41nenzjx2jtb1.mp4");
+	}
 }
