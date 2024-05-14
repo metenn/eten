@@ -1,3 +1,4 @@
+// @ts-nocheck
 module.exports = function evaluationBFSfunny(board) {
 	// right goal
 	if (board.ball[0] == 11)

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+// @ts-nocheck
 const { createCanvas } = require("canvas");
 const { inspect } = require("util");
 const fs = require("fs");

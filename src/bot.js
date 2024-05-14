@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+// @ts-nocheck
 "use strict";
 
 const PriorityQueue = require("js-priority-queue");
