@@ -1,6 +1,5 @@
 import Point from "./Point.js";
 import Edge from "./Edge.js";
-import { Canvas } from "canvas";
 import fs from "node:fs";
 
 export default class BaseBoard {
@@ -26,7 +25,7 @@ export default class BaseBoard {
 	/** @type {Point} */
 	// @ts-expect-error
 	ball;
-	/** @type {Canvas} */
+	/** @type {import("canvas").Canvas} */
 	// @ts-expect-error
 	canvas;
 	/** @type {import("canvas").CanvasRenderingContext2D} */
@@ -106,7 +105,7 @@ export default class BaseBoard {
 	 * @param {number} endX 
 	 * @param {number} endY 
 	 * @param {string} uid 
-	 * @returns {CanvasGradient | undefined}
+	 * @returns {import("canvas").CanvasGradient | undefined}
 	 */
 	getGradient(begX, begY, endX, endY, uid) {
 		const settings = /** @type {import("../../../types.js").IUserSettings} */ (JSON.parse(fs.readFileSync("./data/userSettings.json", "utf8")));

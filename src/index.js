@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import * as Discord from "discord.js";
-import fs from "fs";
-import path from "path";
+import { GatewayIntentBits, Client, Partials, Collection } from "discord.js";
+import fs from "node:fs";
+import path from "node:path";
 import { Player } from "discord-player";
-import config from "./config.json";
+import config from "./config.json" with { type: "json" };;
 import createRequiredFiles from "./lib/createRequiredFiles.js";
 import cronJobs from "./lib/cronJobs.js";
 import * as discordEvents from "./lib/discordEvents/index.js";
@@ -26,39 +25,41 @@ import {
 // mimuw
 import { create, createReactionMessages } from "./lib/mimuw/create.js";
 import rotateAvatar from "./lib/rotateAvatar.js";
-export const client = new Discord.Client({
+export const client = new Client({
 	intents: [
-		Discord.GatewayIntentBits.Guilds,
-		Discord.GatewayIntentBits.GuildMessages,
-		Discord.GatewayIntentBits.GuildMembers,
-		Discord.GatewayIntentBits.GuildVoiceStates,
-		Discord.GatewayIntentBits.GuildMessageReactions
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers,
+		GatewayIntentBits.GuildVoiceStates,
+		GatewayIntentBits.GuildMessageReactions
 	],
 	partials: [
-		Discord.Partials.Message,
-		Discord.Partials.Channel,
-		Discord.Partials.Reaction
+		Partials.Message,
+		Partials.Channel,
+		Partials.Reaction
 	]
 });
-client.commands = new Discord.Collection();
+client.commands = new Collection();
+// @ts-expect-error
 export const player = new Player(client);
+player.extractors.loadDefault();
 
 /**
  * 
  * @param {string} dirPath 
- * @param {boolean} tsFiles 
  * @param {string[]} arrayOfFiles 
  * @returns {string[]}
  */
-function getAllFiles(dirPath, tsFiles, arrayOfFiles = []) {
+function getAllFiles(dirPath, arrayOfFiles = []) {
 	const files = fs.readdirSync(dirPath);
 
 	files.forEach(function (file) {
 		if (fs.statSync(dirPath + "/" + file).isDirectory()) {
-			arrayOfFiles = getAllFiles(dirPath + "/" + file, tsFiles, arrayOfFiles);
+			arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
 		}
-		else if (file.endsWith(".js") && file.startsWith("ts_") == tsFiles) {
-			arrayOfFiles.push(path.join(dirPath, "/", file));
+		else if (file.endsWith(".js")) {
+			arrayOfFiles.push(path.join(dirPath + "/", file));
 		}
 	});
 
@@ -69,10 +70,12 @@ async function updateSlashCommands() {
 	/** @type {any[]} */
 	const slashCommands = [];
 	// for typescript slash command files
-	const tsCommandFiles = getAllFiles(`${__dirname}/commands`, true);
+	const tsCommandFiles = getAllFiles("src/commands");
+	console.log(tsCommandFiles);
 	for (const file of tsCommandFiles) {
+		console.log(file.substring(4).replaceAll("\\", "/"));
 		/** @type {import("../types.js").SlashCommandFile} */
-		const command = await import(file);
+		const command = await import(`./${file.substring(4)}`);
 		client.commands.set(command.data.name, command);
 		slashCommands.push(command.data.toJSON());
 		// This won't set the aliases in Discord?
@@ -82,9 +85,10 @@ async function updateSlashCommands() {
 		}
 	}
 	// for typescript context menu interaction files
-	const contextMenuFiles = fs.readdirSync(`${__dirname}/contextMenus`);
+	const contextMenuFiles = fs.readdirSync(`./src/contextMenus`);
+	console.log(contextMenuFiles);
 	for (const file of contextMenuFiles) {
-		const command = /** @type {SlashCommandFile} */ await import(`${__dirname}/contextMenus/${file}`);
+		const command = /** @type {SlashCommandFile} */ await import(`./contextMenus/${file}`);
 		client.commands.set(command.data.name, command);
 		slashCommands.push(command.data.toJSON());
 	}

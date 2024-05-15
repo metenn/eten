@@ -26,7 +26,7 @@ export default async function(interaction) {
 		}
 	}
 
-	if (!interaction.isCommand() && !interaction.isContextMenu()) return;
+	if (!interaction.isCommand() && !interaction.isContextMenuCommand()) return;
 
 	if (!client.commands.has(interaction.commandName)) return;
 

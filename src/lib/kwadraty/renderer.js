@@ -34,13 +34,15 @@ export default class Board extends BaseBoard {
 
 		for (let i = 0; i < this.uids.length; i++) {
 			if (settings[this.uids[i]] !== undefined && settings[this.uids[i]].color !== undefined)
+				// @ts-expect-error
 				this.colors[i] = settings[this.uids[i]].color;
 		}
 
 		this.canvas = createCanvas(this.offX * 2 + 3 * this.spacing, this.offY * 2 + 3 * this.spacing);
 		this.ctx = this.canvas.getContext("2d");
 
-		const points: Array<Point> = [];
+		/** @type {Point[]} */
+		const points = [];
 		const pos = new Array(5);
 		for (let i = 0; i < pos.length; i++)
 			pos[i] = new Array(5);
@@ -66,6 +68,7 @@ export default class Board extends BaseBoard {
 		this.pos = pos;
 		this.points = points;
 
+		/** @type {Edge[]} */
 		this.edges = [];
 	}
 

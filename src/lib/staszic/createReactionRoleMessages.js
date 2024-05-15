@@ -1,4 +1,4 @@
-import Discord from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { client } from "../../index.js";
 /** @typedef {{ [letter: string]: string }} LetterMap */
 
@@ -30,7 +30,7 @@ export async function sendSzczesliwyNumerekMessages(channelID) {
 			desc += `${reactions[j - 1]} - numerek ${i * 10 + j}\n`;
 		}
 
-		const embed = new Discord.MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`Numerki od ${i * 10 + 1} do ${i * 10 + 10}`)
 			.setColor(/** @type {import("discord.js").ColorResolvable} */(colors[i]))
 			.setDescription(desc);
@@ -75,7 +75,7 @@ export async function sendMessages(channelID) {
 			desc += `${letters[letter]} - ${index}${letter}\n`;
 		}
 
-		const embed = new Discord.MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`Klasy ${klasyName[index - 1]}`)
 			.setColor(/** @type {import("discord.js").ColorResolvable} */(colors[index - 1]))
 			.setDescription(desc);
@@ -118,7 +118,7 @@ export async function editMessage(channelID, msgID) {
 			desc += `${letters[letter]} - 1${letter}\n`;
 	}
 
-	const embed = new Discord.MessageEmbed()
+	const embed = new EmbedBuilder()
 		.setTitle(`Klasy Pierwsze`)
 		.setColor("#E09F7D")
 		.setDescription(desc);

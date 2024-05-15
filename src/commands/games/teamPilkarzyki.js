@@ -1,38 +1,32 @@
-import Board from "../../lib/pilkarzyki/4players";
-import Discord, { ButtonInteraction, Client, CommandInteraction, Message, MessageActionRow, MessageButtonStyleResolvable, TextChannel } from "discord.js";
-import { APIMessage, ThreadAutoArchiveDuration } from "discord-api-types";
-import fs from "fs";
-import { SlashCommandBuilder, SlashCommandUserOption } from "@discordjs/builders";
-import config from "../../config.json";
-import { IRanking } from "../../lib/types";
-const Elo = require("elo-rating");
+import Board from "../../lib/pilkarzyki/4players.js";
+import fs from "node:fs";
+import config from "../../config.json" with { type: "json" };;
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
+import Elo from "elo-rating";
 
-interface IUids {
-	[uid: string]: number
-}
+/** @typedef {{ [uid: string]: number; }} IUids */
 
-interface IBoards {
-	[id: string]: Board
-}
+/** @typedef {{ [id: string]: Board; }} IBoards */
 
-interface IAccept {
-	uids: Array<string>;
-	usernames: Array<string>;
-	accepted: Array<string>;
-	message?: APIMessage | Message<boolean>;
-}
+/** @typedef {{uids: Array<string>;usernames: Array<string>;accepted: Array<string>;message?: import("discord.js").APIMessage | import("discord.js").Message<boolean>;}} IAccept */
 
-interface IAccepts {
-	[id: string]: IAccept
-}
+/** @typedef {{[id: string]: IAccept;}} IAccepts */
 
-const uids: IUids = {};
-const boards: IBoards = {};
+/** @type {IUids} */
+const uids = {};
+/** @type {IBoards} */
+const boards = {};
 let gameID = 1;
 let newAcceptID = 1;
-const accepts: IAccepts = {};
+/** @type {IAccepts} */
+const accepts = {};
 
-function getButtons(id: number): Array<MessageActionRow> {
+/**
+ * 
+ * @param {number} id 
+ * @returns {ActionRowBuilder<ButtonBuilder>[] | undefined}
+ */
+function getButtons(id) {
 	let indexes;
 	try {
 		indexes = boards[id].possibleMovesIndexes();
@@ -41,77 +35,78 @@ function getButtons(id: number): Array<MessageActionRow> {
 		console.error("Couldnt get possibleMovesIndexes. Boards probably doesnt exist");
 		return;
 	}
-	let style: MessageButtonStyleResolvable;
+	/** @type {ButtonStyle} */
+	let style;
 	if (boards[id].turn % 2 == 0)
-		style = "PRIMARY";
+		style = ButtonStyle.Primary;
 	else
-		style = "DANGER";
+		style = ButtonStyle.Danger;
 
-	const row1 = new Discord.MessageActionRow()
+	const row1 = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#0")
 				.setLabel("↖")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(0)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#1")
 				.setLabel("⬆")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(1)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#2")
 				.setLabel("↗")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(2))
-		);
-	const row2 = new Discord.MessageActionRow()
+		));
+	const row2 = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#3")
 				.setLabel("⬅")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(3)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#disabled")
 				.setLabel("xd")
 				.setStyle(style)
 				.setDisabled(true),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#4")
 				.setLabel("➡")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(4))
-		);
-	const row3 = new Discord.MessageActionRow()
+		));
+	const row3 = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#5")
 				.setLabel("↙")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(5)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#6")
 				.setLabel("⬇")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(6)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#7")
 				.setLabel("↘")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(7))
-		);
-	const row4 = new Discord.MessageActionRow()
+		));
+	const row4 = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#remis")
 				.setLabel("Remis")
-				.setStyle("SECONDARY"),
-			new Discord.MessageButton()
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
 				.setCustomId("teampilkarzyki#surrender")
 				.setLabel("Poddaj się")
-				.setStyle("SECONDARY")
-		);
+				.setStyle(ButtonStyle.Secondary)
+		));
 
 	return [row1, row2, row3, row4];
 }
@@ -138,7 +133,12 @@ export const data = new SlashCommandBuilder()
 			.setRequired(true)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").Interaction} interaction 
+ * @returns 
+ */
+export async function execute(interaction) {
 	if (interaction.isButton()) {
 		interaction.customId = interaction.customId.slice(interaction.customId.indexOf("#") + 1);
 
@@ -185,7 +185,8 @@ export async function execute(interaction: CommandInteraction) {
 			const winners = boards[bid].win;
 			const losers = (winners + 1) % 2;
 
-			const wholeRanking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+			/** @type {import("../../../types.js").IRanking} */
+			const wholeRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
 			const ranking = wholeRanking.teampilkarzyki;
 			const guids = boards[bid].uids;
 
@@ -222,13 +223,15 @@ export async function execute(interaction: CommandInteraction) {
 		}
 		return;
 	}
-	else if (interaction.isCommand()) {
+	else if (interaction.isChatInputCommand()) {
 		const player1 = interaction.user;
 		const player2 = interaction.options.getUser("gracz2");
 		const player3 = interaction.options.getUser("gracz3");
 		const player4 = interaction.options.getUser("gracz4");
 
+		// @ts-expect-error
 		const guids = [player1.id, player3.id, player2.id, player4.id];
+		// @ts-expect-error
 		const usernames = [player1.username, player3.username, player2.username, player4.username];
 
 		if (uids[guids[0]]) {
@@ -242,7 +245,8 @@ export async function execute(interaction: CommandInteraction) {
 			}
 		}
 
-		const check: { [uid: string]: boolean } = {};
+		/** @type {{ [uid: string]: boolean; }} */
+		const check = {};
 		for (const uid of guids) {
 			if (check[uid]) {
 				interaction.reply("Osoby nie mogą się powtarzać");
@@ -251,7 +255,8 @@ export async function execute(interaction: CommandInteraction) {
 			check[uid] = true;
 		}
 
-		const wholeRanking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+		/** @type {import("../../../types.js").IRanking} */
+		const wholeRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
 		const ranking = wholeRanking.teampilkarzyki;
 
 		for (const uid of guids) {
@@ -262,7 +267,8 @@ export async function execute(interaction: CommandInteraction) {
 		wholeRanking.teampilkarzyki = ranking;
 		fs.writeFileSync("./data/ranking.json", JSON.stringify(wholeRanking));
 
-		const newAccept: IAccept = {
+		/** @type {IAccept} */
+		const newAccept = {
 			usernames: usernames,
 			uids: guids,
 			accepted: []
@@ -270,17 +276,17 @@ export async function execute(interaction: CommandInteraction) {
 		const buttonsID = newAcceptID;
 		newAcceptID++;
 
-		const row = new Discord.MessageActionRow()
+		const row = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 			.addComponents(
-				new Discord.MessageButton()
+				new ButtonBuilder()
 					.setLabel("Tak")
 					.setCustomId("teampilkarzyki#acceptYes#" + buttonsID)
-					.setStyle("PRIMARY"),
-				new Discord.MessageButton()
+					.setStyle(ButtonStyle.Primary),
+				new ButtonBuilder()
 					.setLabel("Nie")
 					.setCustomId("teampilkarzyki#acceptNo#" + buttonsID)
-					.setStyle("PRIMARY")
-			);
+					.setStyle(ButtonStyle.Primary)
+			));
 		const msg = `Drużynowe piłkarzyki: <@${guids[0]}> i <@${guids[2]}> przeciwko <@${guids[1]}> i <${guids[3]}>`;
 		const message = await interaction.reply({ content: msg, components: [row], fetchReply: true });
 		newAccept.message = message;
@@ -289,7 +295,12 @@ export async function execute(interaction: CommandInteraction) {
 	}
 }
 
-async function buttonManager(interaction: ButtonInteraction): Promise<boolean> {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @returns {Promise<boolean>}
+ */
+async function buttonManager(interaction) {
 	const bid = uids[interaction.user.id];
 
 	if (interaction.user.id != boards[bid].turnUID)
@@ -307,7 +318,8 @@ async function buttonManager(interaction: ButtonInteraction): Promise<boolean> {
 		boards[bid].longestMove[interaction.user.id] = Math.max(boards[bid].longestMove[interaction.user.id], boards[bid].currMoveLen);
 		boards[bid].currMoveLen = 0;
 
-		const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+		/** @type {import("../../../types.js").IRanking} */
+		const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
 		if (ranking.najdluzszyruch[interaction.user.id] == undefined)
 			ranking.najdluzszyruch[interaction.user.id] = 0;
 		ranking.najdluzszyruch[interaction.user.id] = Math.max(ranking.najdluzszyruch[interaction.user.id], boards[bid].longestMove[interaction.user.id]);
@@ -317,7 +329,12 @@ async function buttonManager(interaction: ButtonInteraction): Promise<boolean> {
 	return false;
 }
 
-async function drawManager(interaction: ButtonInteraction): Promise<boolean> {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @returns {Promise<boolean>}
+ */
+async function drawManager(interaction) {
 	const bid = uids[interaction.user.id];
 	if (boards[bid].remis.includes(interaction.user.id))
 		return true;
@@ -326,7 +343,8 @@ async function drawManager(interaction: ButtonInteraction): Promise<boolean> {
 	if (boards[bid].remis.length == 4) {
 		sendBoard(bid, interaction.client, interaction.message, "Remis", false);
 
-		const wholeRanking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+		/** @type {import("../../../types.js").IRanking} */
+		const wholeRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
 		const guids = boards[bid].uids;
 
 		const tempuids = [...guids];
@@ -348,7 +366,12 @@ async function drawManager(interaction: ButtonInteraction): Promise<boolean> {
 	return false;
 }
 
-async function surrenderManager(interaction: ButtonInteraction): Promise<boolean> {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @returns {Promise<boolean>}
+ */
+async function surrenderManager(interaction) {
 	const bid = uids[interaction.user.id];
 
 	if (boards[bid].surrender[boards[bid].uids.indexOf(interaction.user.id) % 2].includes(interaction.user.id))
@@ -361,7 +384,8 @@ async function surrenderManager(interaction: ButtonInteraction): Promise<boolean
 
 		sendBoard(bid, interaction.client, interaction.message, `<@${boards[bid].uids[losers]}> i <@${boards[bid].uids[losers + 2]}> poddali się`, false);
 
-		const wholeRanking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+		/** @type {import("../../../types.js").IRanking} */
+		const wholeRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
 		const ranking = wholeRanking.teampilkarzyki;
 		const guids = boards[bid].uids;
 
@@ -399,7 +423,12 @@ async function surrenderManager(interaction: ButtonInteraction): Promise<boolean
 	return false;
 }
 
-async function acceptManager(interaction: ButtonInteraction) {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @returns 
+ */
+async function acceptManager(interaction) {
 	const bUids = interaction.customId.split("#");
 	const acceptID = bUids[1];
 	const accept = accepts[acceptID];
@@ -408,7 +437,7 @@ async function acceptManager(interaction: ButtonInteraction) {
 		return;
 
 	if (interaction.customId.startsWith("acceptNo")) {
-		(accept.message as Message).edit({
+		/** @type {import("discord.js").Message} */(accept.message).edit({
 			content: `${interaction.user.username} nie zaakceptował gry`,
 			components: []
 		});
@@ -423,17 +452,17 @@ async function acceptManager(interaction: ButtonInteraction) {
 		if (accept.accepted.length != 4) {
 			const guids = accept.uids;
 			const msg = `Drużynowe piłkarzyki: <@${guids[0]}> i <@${guids[2]}> przeciwko <@${guids[1]}> i <@${guids[3]}> (${accept.accepted.length}/4 osób zaakceptowało)`;
-			const row = new Discord.MessageActionRow()
+			const row = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 				.addComponents(
-					new Discord.MessageButton()
+					new ButtonBuilder()
 						.setLabel("Tak")
 						.setCustomId("teampilkarzyki#acceptYes#" + acceptID)
-						.setStyle("PRIMARY"),
-					new Discord.MessageButton()
+						.setStyle(ButtonStyle.Primary),
+					new ButtonBuilder()
 						.setLabel("Nie")
 						.setCustomId("teampilkarzyki#acceptNo#" + acceptID)
-						.setStyle("DANGER")
-				);
+						.setStyle(ButtonStyle.Danger)
+				));
 			interaction.update({ content: msg, components: [row] });
 			return;
 		}
@@ -443,7 +472,8 @@ async function acceptManager(interaction: ButtonInteraction) {
 			for (const uid of accept.uids) {
 				for (const [id, acc] of Object.entries(accepts)) {
 					if (acc.uids.includes(uid)) {
-						(acc.message as Message).edit({ content: acc.message.content, components: [] });
+						// @ts-expect-error
+						/** @type {import("discord.js").Message} */(acc.message).edit({ content: acc.message.content, components: [] });
 						delete accepts[id];
 					}
 				}
@@ -460,7 +490,16 @@ async function acceptManager(interaction: ButtonInteraction) {
 	}
 }
 
-async function sendBoard(id: number, client: Client, message: APIMessage | Message<boolean>, content: string, components = true, interaction: CommandInteraction = undefined) {
+/**
+ * 
+ * @param {number} id 
+ * @param {import("discord.js").Client} client 
+ * @param {import("discord.js").APIMessage | import("discord.js").Message<boolean>} message 
+ * @param {string} content 
+ * @param {boolean} components 
+ * @param {import("discord.js").CommandInteraction|undefined} interaction 
+ */
+async function sendBoard(id, client, message, content, components = true, interaction = undefined) {
 	try {
 		boards[id].draw();
 	}
@@ -468,21 +507,23 @@ async function sendBoard(id: number, client: Client, message: APIMessage | Messa
 		console.error("Couldnt draw board (Probably doesnt exist)");
 	}
 
-	const attachment = new Discord.MessageAttachment(`./tmp/boardTeamPilkarzyki${id}.png`);
-	const img = await (client.guilds.cache.get(config.junkChannel.guild).channels.cache.get(config.junkChannel.channel) as TextChannel).send({ files: [attachment] });
+	const attachment = new AttachmentBuilder(`./tmp/boardTeamPilkarzyki${id}.png`);
+	// @ts-expect-error
+	const img = await /** @type {import("discord.js").TextChannel} */ (client.guilds.cache.get(config.junkChannel.guild).channels.cache.get(config.junkChannel.channel)).send({ files: [attachment] });
+	// @ts-expect-error
 	content += `\n${img.attachments.first().url}`;
 	const messagePayload = {
 		content: content,
-		components: (components ? getButtons(id) : [])
+		components: (components ? getButtons(id) ?? [] : [])
 	};
 
 	if (interaction)
 		message = await interaction.editReply(messagePayload);
 	else
-		message = await (message as Message).edit(messagePayload);
+		message = await /** @type {import("discord.js").Message} */(message).edit(messagePayload);
 
 	try {
-		boards[id].message = (message as Message<boolean>);
+		boards[id].message = /** @type {import("discord.js").Message<boolean>} */(message);
 	}
 	catch (error) {
 		console.error("Couldn't set boards[id].message (probably boards[id] doesnt exist)");

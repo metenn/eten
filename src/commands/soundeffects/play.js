@@ -1,26 +1,22 @@
-import { SlashCommandBuilder, SlashCommandIntegerOption, SlashCommandStringOption } from "@discordjs/builders";
-import Discord, { CommandInteraction, ColorResolvable } from "discord.js";
+import { EmbedBuilder, SlashCommandBuilder, SlashCommandIntegerOption, SlashCommandStringOption } from "discord.js";
 import { joinVoiceChannel, createAudioPlayer, createAudioResource } from "@discordjs/voice";
-import { execSync } from "child_process";
-import fs from "fs";
+import { execSync } from "node:child_process";
+import fs from "node:fs";
 const player = createAudioPlayer();
 
-interface IEffects {
-	[name: string]: {
-		name: string,
-		type: "args"|"command",
-		args?: string
-		command?: string
-	}
-}
-
-function sleep(ms: number) {
+/**
+ * 
+ * @param {number} ms 
+ * @returns 
+ */
+function sleep(ms) {
 	return new Promise((resolve) => {
 		setTimeout(resolve, ms);
 	});
 }
 
-const effects: IEffects = JSON.parse(fs.readFileSync("./data/effects.json", "utf8"));
+/** @type { {[name: string]: {name: string,type: "args"|"command", args?: string, command?: string}}} IEffects */
+const effects = JSON.parse(fs.readFileSync("./data/effects.json", "utf8"));
 
 export const data = new SlashCommandBuilder()
 	.setName("play")
@@ -34,7 +30,7 @@ try {
 		.setRequired(false);
 
 	for (const [effect, name] of Object.entries(effects))
-		effectsOption.addChoice(name.name, effect);
+		effectsOption.addChoices({ "name": name.name, "value": effect });
 
 	data
 		.addSubcommand(subcommand =>
@@ -62,13 +58,13 @@ try {
 						.setDescription("Nałóż kilka efektów (napisz ? aby dać liste nazw)")
 						.setRequired(false)
 				)
-				// niestety to daje dostep do shella wiec nie mozna tego uzyc :((
-				// .addStringOption(
-				// 	new SlashCommandStringOption()
-				// 		.setName("advanced")
-				// 		.setDescription("Zaawansowane ustawienia (argumenty przekazywane bezpośrednio SoX")
-				// 		.setRequired(false)
-				// )
+			// niestety to daje dostep do shella wiec nie mozna tego uzyc :((
+			// .addStringOption(
+			// 	new SlashCommandStringOption()
+			// 		.setName("advanced")
+			// 		.setDescription("Zaawansowane ustawienia (argumenty przekazywane bezpośrednio SoX")
+			// 		.setRequired(false)
+			// )
 		);
 }
 catch {
@@ -111,11 +107,25 @@ data
 			.setDescription("Lista dźwięków")
 	);
 
-function getAudioLength(path: string): string {
+/**
+ * 
+ * @param {string} path 
+ * @returns {string}
+ */
+function getAudioLength(path) {
 	return execSync(`soxi -d "${path}"`).toString().substring(3).slice(0, -1);
 }
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").CommandInteraction} interaction 
+ * @returns 
+ */
+export async function execute(interaction) {
+	if (interaction.isChatInputCommand === undefined || !interaction.isChatInputCommand()) {
+		await interaction.reply("Pls slash komenda");
+		return;
+	}
 	if (interaction.options.getSubcommand() == "list") {
 		let desc = "";
 		let i = 1;
@@ -125,8 +135,8 @@ export async function execute(interaction: CommandInteraction) {
 			i++;
 		});
 
-		const embed = new Discord.MessageEmbed()
-			.setColor(("#" + Math.floor(Math.random() * 16777215).toString(16)) as ColorResolvable)
+		const embed = new EmbedBuilder()
+			.setColor(/** @type {import("discord.js").ColorResolvable} */("#" + Math.floor(Math.random() * 16777215).toString(16)))
 			.setTitle("Lista dźwięków")
 			.setDescription(desc);
 
@@ -134,12 +144,13 @@ export async function execute(interaction: CommandInteraction) {
 	}
 	else if (interaction.options.getSubcommand() == "sound" || interaction.options.getSubcommand() == "random") {
 		const files = fs.readdirSync("./soundeffects");
-		const repeat = interaction.options.getInteger("repeat") ? interaction.options.getInteger("repeat") : 1;
+		const repeat = interaction.options.getInteger("repeat") ?? 1;
 		const efekt = interaction.options.getString("efekt");
+		/** @type {number} */
 		let num;
 
 		if (interaction.options.getSubcommand() == "sound")
-			num = interaction.options.getInteger("numer");
+			num = interaction.options.getInteger("numer") ?? -1;
 		else
 			num = Math.floor(Math.random() * files.length) + 1;
 
@@ -149,13 +160,17 @@ export async function execute(interaction: CommandInteraction) {
 		}
 
 		const fileName = files[num - 1];
+		// @ts-expect-error
 		const guild = interaction.client.guilds.cache.get(interaction.guildId);
+		// @ts-expect-error
 		const user = guild.members.cache.get(interaction.user.id);
 		let path = `./soundeffects/${fileName}`;
 		let isAlreadyOnVC = false;
-		if (guild.me.voice)
+		// @ts-expect-error
+		if (guild.members.me.voice)
 			isAlreadyOnVC = true;
 
+		// @ts-expect-error
 		if (!user.voice.channel) {
 			interaction.reply("Nie jesteś na VC na tym serwerze");
 			return;
@@ -175,6 +190,7 @@ export async function execute(interaction: CommandInteraction) {
 			}
 
 			let names = "";
+			// @ts-expect-error
 			const effs = interaction.options.getString("multiple").split(" ");
 			await interaction.reply("Przygotowywanie dźwięku...");
 
@@ -195,6 +211,7 @@ export async function execute(interaction: CommandInteraction) {
 					path = "tmp/tmp.mp3";
 				}
 				catch (error) {
+					// @ts-expect-error
 					await interaction.editReply("Wystąpił błąd przy tworzeniu dźwięku.\n```\n" + error.toString() + "```");
 					console.error(error);
 					return;
@@ -219,6 +236,7 @@ export async function execute(interaction: CommandInteraction) {
 					execSync(`${effects[efekt].command} "${path}"`, { stdio: "ignore" });
 			}
 			catch (error) {
+				// @ts-expect-error
 				await interaction.editReply("Wystąpił błąd przy tworzeniu dźwięku.\n```\n" + error.toString() + "```");
 				console.error(error);
 				return;
@@ -230,6 +248,7 @@ export async function execute(interaction: CommandInteraction) {
 		else
 			interaction.reply(`Puszczanie dźwięku ${fileName} (${getAudioLength(path)})${additionalText}.`);
 
+		// @ts-expect-error
 		const channel = user.voice.channel;
 		const connection = joinVoiceChannel({
 			channelId: channel.id,
@@ -248,21 +267,26 @@ export async function execute(interaction: CommandInteraction) {
 			connection.disconnect();
 	}
 	else if (interaction.options.getSubcommand() == "stop") {
+		// @ts-expect-error
 		const guild = interaction.client.guilds.cache.get(interaction.guildId);
+		// @ts-expect-error
 		const user = guild.members.cache.get(interaction.user.id);
 
+		// @ts-expect-error
 		if (!user.voice.channel) {
 			interaction.reply("Nie jesteś na VC na tym serwerze");
 			return;
 		}
 
-		if (!guild.me.voice.channel) {
+		// @ts-expect-error
+		if (!guild.members.me.voice.channel) {
 			interaction.reply("Bot nie jest na VC");
 			return;
 		}
 
 		player.stop();
-		guild.me.voice.disconnect();
+		// @ts-expect-error
+		guild.members.me.voice.disconnect();
 
 		interaction.reply("Rozłączono");
 	}

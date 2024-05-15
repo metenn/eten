@@ -1,6 +1,5 @@
-import { SlashCommandBuilder, SlashCommandStringOption } from "@discordjs/builders";
-import { AutocompleteInteraction, CommandInteraction, CacheType, Interaction, ApplicationCommandOptionChoiceData } from "discord.js";
-import { player } from "../../index";
+import { SlashCommandBuilder, SlashCommandStringOption } from "discord.js";
+import { player } from "../../index.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("effects")
@@ -13,29 +12,40 @@ export const data = new SlashCommandBuilder()
 			.setAutocomplete(true)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").ChatInputCommandInteraction} interaction 
+ * @returns 
+ */
+export async function execute(interaction) {
 	await interaction.deferReply();
 
+	// @ts-expect-error
 	const guild = interaction.client.guilds.cache.get(interaction.guild.id);
+	// @ts-expect-error
 	const user = guild.members.cache.get(interaction.user.id);
 
+	// @ts-expect-error
 	if (!user.voice.channel) {
 		interaction.editReply("Nie jesteś na VC");
 		return;
 	}
 
-	const queue = player.getQueue(interaction.guild.id);
-	if (!queue || !queue.playing) {
+	// @ts-expect-error
+	const queue = player.queues.get(interaction.guild.id);
+	if (!queue || !queue.isPlaying()) {
 		interaction.editReply("Nie puszczam żadnej muzyki");
 		return;
 	}
 
 	const filter = interaction.options.getString("efekt");
-	const enabled: string[] = [];
-	const disabled: string[] = [];
+	/** @type {string[]} */
+	const enabled = [];
+	/** @type {string[]} */
+	const disabled = [];
 
-	queue.getFiltersEnabled().map(x => enabled.push(x));
-	queue.getFiltersDisabled().map(x => disabled.push(x));
+	queue.filters.ffmpeg.getFiltersEnabled().map(x => enabled.push(x));
+	queue.filters.ffmpeg.getFiltersEnabled().map(x => disabled.push(x));
 
 	if (!filter) {
 		let msg = "Włączone efekty: ";
@@ -64,23 +74,20 @@ export async function execute(interaction: CommandInteraction) {
 			return;
 		}
 
-		const newFilters: {
-			[filter: string]: boolean
-		} = {};
-
-		for (const eff of enabled)
-			newFilters[eff] = true;
-		newFilters[filter] = !enabled.includes(filter);
-
-		await queue.setFilters(newFilters);
+		await queue.filters.ffmpeg.toggle(/** @type {keyof import("discord-player").QueueFilters} */(filter));
 
 		interaction.editReply(`${enabled.includes(filter) ? "Wyłączono" : "Włączono"} efekt ${filter}`);
 	}
 }
 
-export async function autocomplete(interaction: AutocompleteInteraction) {
-	const effects = [ "bassboost_low", "bassboost", "bassboost_high", "8D", "vaporwave", "nightcore", "phaser", "tremolo", "vibrato", "reverse", "treble", "normalizer", "normalizer2", "surrounding", "pulsator", "subboost", "karaoke", "flanger", "gate", "haas", "mcompand", "mono", "mstlr", "mstrr", "compressor", "expander", "softlimiter", "chorus", "chorus2d", "chorus3d", "fadein", "dim", "earrape"];
-	const name: { [effect: string]: string } = {
+/**
+ * 
+ * @param {import("discord.js").AutocompleteInteraction} interaction 
+ */
+export async function autocomplete(interaction) {
+	const effects = ["bassboost_low", "bassboost", "bassboost_high", "8D", "vaporwave", "nightcore", "phaser", "tremolo", "vibrato", "reverse", "treble", "normalizer", "normalizer2", "surrounding", "pulsator", "subboost", "karaoke", "flanger", "gate", "haas", "mcompand", "mono", "mstlr", "mstrr", "compressor", "expander", "softlimiter", "chorus", "chorus2d", "chorus3d", "fadein", "dim", "earrape"];
+	/** @type {{ [effect: string]: string; }} */
+	const name = {
 		"bassboost_low": "mały bassbost",
 		"bassboost": "bassboost",
 		"bassboost_high": "duży bassbost",
@@ -117,8 +124,10 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
 	};
 
 	let i = 0;
-	const suggestions: Array<ApplicationCommandOptionChoiceData> = [];
+	/** @type {import("discord.js").ApplicationCommandOptionChoiceData[]} */
+	const suggestions = [];
 	for (const effect of effects) {
+		// @ts-expect-error
 		if (effect.startsWith(interaction.options.getString("efekt"))) {
 			suggestions.push({
 				name: name[effect],

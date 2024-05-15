@@ -1,7 +1,7 @@
 // @ts-nocheck
-const { createCanvas } = require("canvas");
-const { inspect } = require("util");
-const fs = require("fs");
+import createCanvas from "canvas";
+import { inspect } from "node:util";
+import fs from "node:fs";
 
 class Point {
 	constructor(index, x, y, color) {
@@ -21,7 +21,7 @@ class Edge {
 	}
 }
 
-module.exports = class Board {
+export default class Board {
 	constructor(spacing, offsetX, offsetY, uids, usernames, id = 0) {
 		this.remis = [];
 		this.usernames = usernames;

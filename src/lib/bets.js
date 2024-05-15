@@ -1,6 +1,6 @@
 import fs from "node:fs";
-import Discord from "discord.js";
-import config from "../config.json";
+import { EmbedBuilder } from "discord.js";
+import config from "../config.json" with { type: "json" };;
 import { client } from "../index.js";
 
 /**
@@ -118,7 +118,7 @@ export async function check(date) {
 			i++;
 		}
 
-		embed = new Discord.MessageEmbed()
+		embed = new EmbedBuilder()
 			.setColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`)
 			.setTitle("Dzisiejsze wyniki zakładuw")
 			.setDescription(desc)
@@ -151,7 +151,7 @@ export async function check(date) {
 		i++;
 	}
 
-	embed = new Discord.MessageEmbed()
+	embed = new EmbedBuilder()
 		.setColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`)
 		.setTitle("Dzisiejsi oszuści")
 		.setDescription(desc);

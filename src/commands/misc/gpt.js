@@ -1,6 +1,5 @@
-import Discord, { CommandInteraction } from "discord.js";
-import { SlashCommandBuilder, SlashCommandStringOption } from "@discordjs/builders";
-import { askQuestion } from "../../openai";
+import { SlashCommandBuilder, SlashCommandStringOption } from "discord.js";
+import { askQuestion } from "../../openai/index.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("gpt")
@@ -12,8 +11,14 @@ export const data = new SlashCommandBuilder()
 			.setRequired(true)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").ChatInputCommandInteraction} interaction 
+ */
+export async function execute(interaction) {
 	await interaction.deferReply();
+	// @ts-expect-error
 	const response = await askQuestion(interaction.options.getString("message"));
+	// @ts-expect-error
 	interaction.editReply(response);
 }

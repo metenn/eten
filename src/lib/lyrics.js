@@ -1,5 +1,4 @@
-import config from "../config.json";
-import fetch from "node-fetch";
+import config from "../config.json" with { type: "json" };;
 import cheerio from "cheerio";
 
 export const lyricsErrorEnum = {
@@ -52,7 +51,7 @@ export async function searchSong(search) {
 	if (response.status != 200)
 		throw new LyricsError(`Response status not 200 (${response.url})`, lyricsErrorEnum.WrongStatus);
 
-	const result = await response.json();
+	const result = /** @type {any} */ (await response.json());
 	/** @type {import("../../types.js").ILyricsSong[]} */
 	const ret = [];
 

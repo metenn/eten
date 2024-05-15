@@ -1,17 +1,19 @@
-import util from "util";
-import * as stream from "stream";
+import util from "node:util";
+import * as stream from "node:stream";
 const streamPipeline = util.promisify(stream.pipeline);
-import fetch from "node-fetch";
-import fs from "fs";
-import Discord, { CommandInteraction } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
+import fs from "node:fs";
+import { AttachmentBuilder, SlashCommandBuilder } from "discord.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("cursedkoteł")
 	.setDescription("kiedy widze nowy filmik damonka :trolldog");
 export const aliases = ["kotbingo", "rozpierdolkota"];
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").CommandInteraction} interaction 
+ */
+export async function execute(interaction) {
 	const folderNumber = Math.floor((Math.random() * 6) + 1);
 	let catNumber;
 	let theMessage = "No cat for you, the was an error";
@@ -60,7 +62,8 @@ export async function execute(interaction: CommandInteraction) {
 		.catch(error => { throw new Error(error); });
 	if (!response.ok) throw new Error(`Unexpected response ${response.statusText}`);
 	// console.log(response.body);
+	// @ts-expect-error
 	await streamPipeline(response.body, fs.createWriteStream("./tmp/placeholder.jpg"));
-	const attachment = new Discord.MessageAttachment("./tmp/placeholder.jpg");
+	const attachment = new AttachmentBuilder("./tmp/placeholder.jpg");
 	await interaction.reply({ files: [attachment] });
 }

@@ -1,11 +1,14 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("ping")
 	.setDescription("Check if the bot is alive and get response time");
 
-export async function execute(interaction: CommandInteraction) {
+	/**
+ * 
+ * @param {import("discord.js").CommandInteraction} interaction 
+ */
+export async function execute(interaction) {
 	await interaction.reply("Pinging...");
 	await interaction.editReply(`Ping: \`${interaction.client.ws.ping}ms\``);
 }

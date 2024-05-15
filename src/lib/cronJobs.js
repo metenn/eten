@@ -1,10 +1,9 @@
 import cron from "cron";
-import fetch from "node-fetch";
 import joinImages from "./joinImages.js";
 import util from "node:util";
 import fs from "node:fs";
-import { MessageAttachment } from "discord.js";
-import config from "../config.json";
+import { AttachmentBuilder } from "discord.js";
+import config from "../config.json" with { type: "json" };;
 import stream from "node:stream";
 import rotateAvatar from "./rotateAvatar.js";
 import miniwalls from "./miniwalls.js";
@@ -26,8 +25,9 @@ const dailyJob = new cron.CronJob(
 			if (!res.ok) throw new Error(`Unexpected response ${res.statusText}`);
 			const response = await fetch(await res.text());
 			if (!response.ok) throw new Error(`Unexpected response ${response.statusText}`);
+			// @ts-expect-error
 			await streamPipeline(response.body, fs.createWriteStream("./tmp/placeholder.jpg"));
-			const attachment = new MessageAttachment("./tmp/placeholder.jpg");
+			const attachment = new AttachmentBuilder("./tmp/placeholder.jpg");
 
 			for (const info of settings.inspiracja.where) {
 				// @ts-expect-error
@@ -62,9 +62,10 @@ const dailyJob = new cron.CronJob(
 					}
 				});
 				if (!imgResult.ok) throw new Error(`Unexpected response ${result.statusText}`);
+				// @ts-expect-error
 				await streamPipeline(imgResult.body, fs.createWriteStream("./tmp/weather.png"));
 				joinImages("data/leg60.png", "tmp/weather.png", "tmp/weatherFinal.png");
-				const weatherAttachment = new MessageAttachment("./tmp/weatherFinal.png");
+				const weatherAttachment = new AttachmentBuilder("./tmp/weatherFinal.png");
 
 				for (const info of settings.pogoda.where) {
 					// @ts-expect-error
@@ -90,11 +91,11 @@ const rotateAvatarJob = new cron.CronJob(
 	rotateAvatar
 )
 
-function cronImageSend() {
+async function cronImageSend() {
 	if (config.cronImageSend.eneabled) {
 		// Co? \/
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const imgConfig = require("../" + config.cronImageSend.images);
+		const imgConfig = await import("../" + config.cronImageSend.images);
 
 		for (const image of imgConfig) {
 			const cronJob = new cron.CronJob(

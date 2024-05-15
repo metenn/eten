@@ -1,3 +1,4 @@
+import { MessageType } from "discord.js";
 import fs from "node:fs";
 
 /** @type {string|undefined} */
@@ -91,9 +92,8 @@ export async function run(message) {
 	else if (message.content == "^" && coChannel !== undefined) {
 		coUsers.daszek.push(message.author.id);
 	}
-	else if (coChannel !== undefined && message.author.id === coUsers.jajco && message.mentions.users.size > 0 && !coUsers.daszek.includes(message.mentions.users.keys().next().value) && message.type != "REPLY") {
+	else if (coChannel !== undefined && message.author.id === coUsers.jajco && message.mentions.users.size > 0 && !coUsers.daszek.includes(message.mentions.users.keys().next().value) && message.type != MessageType.Reply) {
 		const uid = message.mentions.users.keys().next().value;
-		// @ts-expect-error
 		if (uid == message.client.user.id) {
 			if (Math.random() <= 0.01 && !coUsers.daszek.includes("257119850026106880")) {
 				message.channel.send("<@257119850026106880>");

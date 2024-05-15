@@ -2,8 +2,8 @@ import Parser from "rss-parser";
 import "colors";
 import crypto from "node:crypto";
 import { client } from "../index.js";
-import config from "../config.json";
-import { MessageEmbed } from "discord.js";
+import config from "../config.json" with { type: "json" };;
+import { ChannelType, EmbedBuilder } from "discord.js";
 
 /** @type {Parser} */
 const parser = new Parser();
@@ -13,7 +13,7 @@ const rssFeedCache = new Map();
 
 /**
  * 
- * @param {boolean?} init 
+ * @param {boolean} [init] 
  * @returns 
  */
 async function checkRSS(init) {
@@ -39,7 +39,7 @@ async function checkRSS(init) {
 			if (cachedItem?.base64Hash != newHash) {
 				const channel = await client.channels.fetch("1029378257197477939");
 				// @ts-expect-error
-				if (!channel.isText()) {
+				if (!channel.isTextBased()) {
 					throw new Error("RSS: Debug channel !isText()");
 				}
 				console.log(`GUID: ${item.guid}`);
@@ -67,11 +67,11 @@ async function checkRSS(init) {
 					console.log(`${channelConfig.channel} - channel fetch() returned null!`.white.bgRed);
 					continue;
 				}
-				if (!channel.isText || (channel.type !== "GUILD_TEXT" && channel.type !== "GUILD_NEWS")) {
+				if (!channel.isTextBased() || (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement)) {
 					console.log(`${channel.id} is not a valid guild text channel!`.white.bgRed);
 					continue;
 				}
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					// @ts-expect-error
 					.setURL(item.link)
 					.setTitle(`**__${item.title}__**`)

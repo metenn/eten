@@ -1,5 +1,4 @@
-import Discord, { CommandInteraction } from "discord.js";
-import { SlashCommandBuilder, SlashCommandStringOption } from "@discordjs/builders";
+import { SlashCommandBuilder, SlashCommandStringOption } from "discord.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("lmgtfy")
@@ -11,7 +10,12 @@ export const data = new SlashCommandBuilder()
 			.setRequired(true)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").ChatInputCommandInteraction} interaction 
+ */
+export async function execute(interaction) {
+	// @ts-expect-error
 	const query = encodeURIComponent(interaction.options.getString("query"));
 	await interaction.reply(`https://lmgt.org/?q=${query}&iie=1`);
 }

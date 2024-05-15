@@ -1,4 +1,4 @@
-import config from "../config.json";
+import config from "../config.json" with { type: "json" };;
 import { Configuration, OpenAIApi } from "openai";
 
 /** @type {OpenAIApi} */

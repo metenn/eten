@@ -1,8 +1,6 @@
-import fs from "fs";
-import Discord, { CommandInteraction, TextChannel } from "discord.js";
-import { SlashCommandBuilder, SlashCommandStringOption } from "@discordjs/builders";
-import Board from "../../lib/pilkarzyki/2players";
-import { IUserSettings } from "../../lib/types.js";
+import fs from "node:fs";
+import { SlashCommandBuilder, SlashCommandStringOption, AttachmentBuilder } from "discord.js";
+import Board from "../../lib/pilkarzyki/2players.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("gradient")
@@ -33,27 +31,37 @@ export const data = new SlashCommandBuilder()
 					.setName("type")
 					.setDescription("Nazwa gradientu")
 					.setRequired(true)
-					.addChoice("Tencza", "rainbow")
-					.addChoice("Losowe kolory", "random")
+					.addChoices({ "name": "Tencza", "value": "rainbow" })
+					.addChoices({ "name": "Losowe kolory", "value": "random" })
 			))
 	.addSubcommand(subcommand =>
 		subcommand
 			.setName("reset")
 			.setDescription("Usuń swój gradient"));
 
-export async function execute(interaction: CommandInteraction) {
-	if (interaction.isCommand === undefined || !interaction.isCommand()) {
-		interaction.reply("Pls slash komenda");
+/**
+ * 
+ * @param {import("discord.js").CommandInteraction} interaction 
+ * @returns 
+ */
+export async function execute(interaction) {
+	if (interaction.isChatInputCommand === undefined || !interaction.isChatInputCommand()) {
+		await interaction.reply("Pls slash komenda");
 		return;
 	}
 
-	const settings: IUserSettings = JSON.parse(fs.readFileSync("./data/userSettings.json", "utf8"));
+	/** @type {import("../../../types.js").IUserSettings} */
+	const settings = JSON.parse(fs.readFileSync("./data/userSettings.json", "utf8"));
 	if (settings[interaction.user.id] === undefined)
 		settings[interaction.user.id] = {};
 
 	if (interaction.options.getSubcommand() === "kolory") {
 		const kolor1 = interaction.options.getString("kolor1");
 		const kolor2 = interaction.options.getString("kolor2");
+		if (kolor1 == null || kolor2 == null) {
+			await interaction.reply("Złe kolorki");
+			return
+		}
 
 		if (!((/#([0-9,A-F,a-f]{3})/.test(kolor1.substring(0, 4)) && kolor1.length == 4) || (/#([0-9,A-F,a-f]{6})/.test(kolor1.substring(0, 7)) && kolor1.length == 7)) || !((/#([0-9,A-F,a-f]{3})/.test(kolor2.substring(0, 4)) && kolor2.length == 4) || (/#([0-9,A-F,a-f]{6})/.test(kolor2.substring(0, 7)) && kolor2.length == 7))) {
 			interaction.reply("Tylko hex kolorki");
@@ -77,15 +85,18 @@ export async function execute(interaction: CommandInteraction) {
 		settings[interaction.user.id].gradient = { from: kolor1, to: nKolor };
 		if (settings[interaction.user.id].dlug === undefined)
 			settings[interaction.user.id].dlug = 0;
+		// @ts-expect-error
 		settings[interaction.user.id].dlug += 2;
 
 		fs.writeFileSync("./data/userSettings.json", JSON.stringify(settings));
 	}
 	else if (interaction.options.getSubcommand() === "special") {
 		const type = interaction.options.getString("type");
+		// @ts-expect-error
 		settings[interaction.user.id].gradient = { special: type };
 		if (settings[interaction.user.id].dlug === undefined)
 			settings[interaction.user.id].dlug = 0;
+		// @ts-expect-error
 		settings[interaction.user.id].dlug += 2;
 
 		fs.writeFileSync("./data/userSettings.json", JSON.stringify(settings));
@@ -101,8 +112,10 @@ export async function execute(interaction: CommandInteraction) {
 	board.move(3);
 	board.turn = 0;
 	board.draw();
-	const attachment = new Discord.MessageAttachment("./tmp/boardPilkarzyki-1.png");
-	const img = await (interaction.client.guilds.cache.get("856926964094337044").channels.cache.get("892842178143997982") as TextChannel).send({ files: [attachment] });
+	const attachment = new AttachmentBuilder("./tmp/boardPilkarzyki-1.png");
+	// @ts-expect-error
+	const img = await /** @type {import("discord.js").TextChannel} */(interaction.client.guilds.cache.get("856926964094337044").channels.cache.get("892842178143997982")).send({ files: [attachment] });
 
+	// @ts-expect-error
 	interaction.reply("Pls dwa bajgiele (gradienty trudna rzecz).\nPreview: " + img.attachments.first().url);
 }

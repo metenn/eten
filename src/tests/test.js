@@ -1,15 +1,15 @@
 // @ts-nocheck
 "use strict";
 
-const Board = require("../../pilkarzykiRenderer.js");
-const ExtBoard = require("../bot.js");
-const fs = require("fs");
-const process = require("process");
+import Board from "../../pilkarzykiRenderer.js";
+import ExtBoard from "../bot.js";
+import fs from "node:fs";
+import process from "node:process";
 
 const evalFunctions = fs.readdirSync("./evaluationFunctions").filter(file => file.endsWith(".js"));
 
 for (const func of evalFunctions) {
-	const evalFunc = require("../evaluationFunctions/" + func);
+	const evalFunc = await import("../evaluationFunctions/" + func);
 	console.log("Function:", evalFunc.name);
 
 	process.stdout.write("\tNo possible moves board: \t");

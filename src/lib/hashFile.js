@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import util from "node:util";
@@ -46,13 +45,13 @@ export function updateHashes() {
 export async function hashFile(url, message) {
 	// if (message.author.id == message.client.id)
 	// jak to działało? poprawiłem:
-	// @ts-expect-error
 	if (message.author.id == message.client.user.id)
 		return;
 
 	console.time("Downloading");
 	const extension = get_url_extension(url);
 	const imgResult = await fetch(url);
+	// @ts-expect-error
 	await streamPipeline(imgResult.body, fs.createWriteStream("./tmp/tmp." + extension));
 	console.timeEnd("Downloading");
 

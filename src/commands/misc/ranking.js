@@ -1,7 +1,6 @@
-import fs from "fs";
-import Discord, { ColorResolvable, CommandInteraction, Snowflake } from "discord.js";
-import { SlashCommandBuilder, SlashCommandStringOption, SlashCommandUserOption } from "@discordjs/builders";
-import { IRanking, repeatingDigitsText } from "../../lib/types";
+import { EmbedBuilder, SlashCommandBuilder, SlashCommandStringOption, SlashCommandUserOption } from "discord.js";
+import fs from "node:fs";
+import { repeatingDigitsText } from "../../lib/types.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("ranking")
@@ -11,17 +10,17 @@ export const data = new SlashCommandBuilder()
 			.setName("gra")
 			.setDescription("gra")
 			.setRequired(true)
-			.addChoice("Piłkarzyki", "pilkarzyki")
-			.addChoice("Kwadraty", "kwadraty")
-			.addChoice("Drużynowe Pilkarzyki", "teampilkarzyki")
-			.addChoice("Najdluższy ruch", "najdluzszyruch")
-			.addChoice("Najdluższa gra w drużynowych piłkarzykach", "najdluzszagrateampilkarzyki")
-			.addChoice("Najdluższa gra w piłkarzykach", "najdluzszagrapilkarzyki")
-			.addChoice("Suma ruchów", "sumaruchow")
-			.addChoice("Przegrania w jajco", "jajco")
-			.addChoice("Wygrane zakłady", "bets")
-			.addChoice("Powtarzające się cyferki", "dubs")
-			.addChoice("Prawdopodobieństwo na cyferki", "dubspercent")
+			.addChoices({ "name": "Piłkarzyki", "value": "pilkarzyki" })
+			.addChoices({ "name": "Kwadraty", "value": "kwadraty" })
+			.addChoices({ "name": "Drużynowe Pilkarzyki", "value": "teampilkarzyki" })
+			.addChoices({ "name": "Najdluższy ruch", "value": "najdluzszyruch" })
+			.addChoices({ "name": "Najdluższa gra w drużynowych piłkarzykach", "value": "najdluzszagrateampilkarzyki" })
+			.addChoices({ "name": "Najdluższa gra w piłkarzykach", "value": "najdluzszagrapilkarzyki" })
+			.addChoices({ "name": "Suma ruchów", "value": "sumaruchow" })
+			.addChoices({ "name": "Przegrania w jajco", "value": "jajco" })
+			.addChoices({ "name": "Wygrane zakłady", "value": "bets" })
+			.addChoices({ "name": "Powtarzające się cyferki", "value": "dubs" })
+			.addChoices({ "name": "Prawdopodobieństwo na cyferki", "value": "dubspercent" })
 	)
 	.addUserOption(
 		new SlashCommandUserOption()
@@ -30,12 +29,19 @@ export const data = new SlashCommandBuilder()
 			.setRequired(false)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").ChatInputCommandInteraction} interaction 
+ */
+export async function execute(interaction) {
 	const type = interaction.options.getString("gra");
 	const mentionedUser = interaction.options.getUser("gracz", false);
 	// why
-	const fullRanking: any = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
-	const ranking: IRanking = fullRanking[type];
+	/** @type {any} */
+	const fullRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
+	/** @type {import("../../../types.js").IRanking} */
+	// @ts-expect-error
+	const ranking = fullRanking[type];
 	let rank = [];
 
 
@@ -44,7 +50,7 @@ export async function execute(interaction: CommandInteraction) {
 		for (const [key, value] of Object.entries(ranking))
 			rank.push({ uids: key, len: value });
 
-		rank.sort(function(a, b) {
+		rank.sort(function (a, b) {
 			return b["len"] - a["len"];
 		});
 		console.log(rank);
@@ -83,11 +89,12 @@ export async function execute(interaction: CommandInteraction) {
 		}
 	}
 	else if (type === "dubs") {
-		const dubRankinkg = (fullRanking as IRanking).dubs;
+		const dubRankinkg = /** @type {import("../../../types.js").IRanking} */(fullRanking).dubs;
 		if (mentionedUser == null) {
 			// Create array: {DiscordID, top number of repeating digits}
 			// for easier sorting
-			const userTopDubs: Array<{user: Snowflake, topDub: number}> = [];
+			/** @type {Array<{ user: import("discord.js").Snowflake, topDub: number; }>} */
+			const userTopDubs = [];
 			for (const [userId, dubRecord] of Object.entries(dubRankinkg)) {
 				let topDub = 0;
 				for (const dubTier of Object.keys(dubRecord)) {
@@ -98,7 +105,7 @@ export async function execute(interaction: CommandInteraction) {
 			}
 
 			// Sort based of top dub number first, if equal - quantity of that top dub
-			userTopDubs.sort(function(a, b) {
+			userTopDubs.sort(function (a, b) {
 				if (a.topDub === b.topDub)
 					return dubRankinkg[b.user][b.topDub] - dubRankinkg[a.user][a.topDub];
 				return b.topDub - a.topDub;
@@ -117,11 +124,12 @@ export async function execute(interaction: CommandInteraction) {
 			}
 			else {
 				// Sorted by top dub
-				const userDubsArr: Array<{dubTier: number, count: number}> = [];
+				/** @type {Array<{ dubTier: number, count: number; }>} */
+				const userDubsArr = [];
 				for (const [dubTier, count] of Object.entries(dubRankinkg[mentionedUser.id])) {
 					userDubsArr.push({ dubTier: Number(dubTier), count: count });
 				}
-				userDubsArr.sort(function(a, b) {
+				userDubsArr.sort(function (a, b) {
 					return b.dubTier - a.dubTier;
 				});
 				for (const entry of userDubsArr) {
@@ -134,10 +142,11 @@ export async function execute(interaction: CommandInteraction) {
 		}
 	}
 	else if (type === "dubspercent") {
-		const dubRankinkg = (fullRanking as IRanking).dubs;
+		const dubRankinkg = /** @type {import("../../../types.js").IRanking} */(fullRanking).dubs;
 		// Create array: {DiscordID, top number of repeating digits}
 		// for easier sorting
-		const userTopDubs: Array<{user: Snowflake, topDub: number}> = [];
+		/** @type {Array<{ user: import("discord.js").Snowflake, topDub: number; }>} */
+		const userTopDubs = [];
 		for (const [userId, dubRecord] of Object.entries(dubRankinkg)) {
 			let topDub = 0;
 			for (const dubTier of Object.keys(dubRecord)) {
@@ -148,14 +157,14 @@ export async function execute(interaction: CommandInteraction) {
 		}
 
 		// Sort based of top dub number first, if equal - quantity of that top dub
-		userTopDubs.sort(function(a, b) {
+		userTopDubs.sort(function (a, b) {
 			if (a.topDub === b.topDub)
 				return dubRankinkg[b.user][b.topDub] - dubRankinkg[a.user][a.topDub];
 			return b.topDub - a.topDub;
 		});
 		const max = userTopDubs[0].topDub;
 		// Count total occurences of numbers repeating N times
-		const arr = new Array<number>(21).fill(0);
+		const arr = /** @type {Array<number>} */(new Array(21)).fill(0);
 		for (const dubRecord of Object.values(dubRankinkg)) {
 			for (let i = 1; i <= max; i++) {
 				if (i in dubRecord) {
@@ -180,7 +189,7 @@ export async function execute(interaction: CommandInteraction) {
 				rank.push({ id: key, won: value["won"], lost: value["lost"], rating: value["rating"] });
 		}
 
-		rank.sort(function(a, b) {
+		rank.sort(function (a, b) {
 			if (b["rating"] == a["rating"])
 				return (b["won"] / (b["won"] + b["lost"])) - (a["won"] / (a["won"] + a["lost"]));
 			return b["rating"] - a["rating"];
@@ -217,8 +226,8 @@ export async function execute(interaction: CommandInteraction) {
 	else if (type === "dubspercent")
 		title = "Prawdopodobieństwo na doświadczenie numerka";
 
-	const embed = new Discord.MessageEmbed()
-		.setColor(("#" + Math.floor(Math.random() * 16777215).toString(16)) as ColorResolvable)
+	const embed = new EmbedBuilder()
+		.setColor(/** @type {import("discord.js").ColorResolvable} */("#" + Math.floor(Math.random() * 16777215).toString(16)))
 		.setTitle(title)
 		.setDescription(desc);
 

@@ -1,6 +1,5 @@
-import { SlashCommandBuilder, SlashCommandStringOption } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
-import { player } from "../../index";
+import { SlashCommandBuilder, SlashCommandStringOption } from "discord.js";
+import { player } from "../../index.js";
 import { QueueRepeatMode } from "discord-player";
 
 export const data = new SlashCommandBuilder()
@@ -10,45 +9,50 @@ export const data = new SlashCommandBuilder()
 		new SlashCommandStringOption()
 			.setName("type")
 			.setDescription("Typ pętli")
-			.addChoice("wyłącz", QueueRepeatMode.OFF.toString())
-			.addChoice("tylko ten utwór", QueueRepeatMode.TRACK.toString())
-			.addChoice("cała kolejka", QueueRepeatMode.QUEUE.toString())
+			.addChoices({"name": "wyłącz", "value": QueueRepeatMode.OFF.toString()})
+			.addChoices({"name": "tylko ten utwór", "value": QueueRepeatMode.TRACK.toString()})
+			.addChoices({"name": "cała kolejka", "value": QueueRepeatMode.QUEUE.toString()})
 			.setRequired(false)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").ChatInputCommandInteraction} interaction 
+ * @returns 
+ */
+export async function execute(interaction) {
 	await interaction.deferReply();
 
+	// @ts-expect-error
 	const guild = interaction.client.guilds.cache.get(interaction.guild.id);
+	// @ts-expect-error
 	const user = guild.members.cache.get(interaction.user.id);
 
+	// @ts-expect-error
 	if (!user.voice.channel) {
 		interaction.editReply("Nie jesteś na VC");
 		return;
 	}
 
-	const queue = player.getQueue(interaction.guild.id);
-	if (!queue || !queue.playing) {
+	// @ts-expect-error
+	const queue = player.queues.get(interaction.guild.id);
+	if (!queue || !queue.isPlaying()) {
 		interaction.editReply("Nie puszczam żadnej muzyki");
 		return;
 	}
 
-	if (!queue.tracks[0]) {
+	if (!queue.history.tracks.at(0)) {
 		interaction.editReply("Nie ma żadnych filmów po aktualnym");
 		return;
 	}
 
+	// @ts-expect-error
 	const type = parseInt(interaction.options.getString("type"));
 
 	if (type) {
-		const success = queue.setRepeatMode(type);
+		queue.setRepeatMode(type);
 
-		if (!success) {
-			interaction.editReply("Wystąpił bład:(");
-			return;
-		}
-
-		let msg;
+		let msg = "";
 		if (type == QueueRepeatMode.OFF)
 			msg = "Wyłączono pętlę";
 		else if (type == QueueRepeatMode.TRACK)
@@ -59,7 +63,7 @@ export async function execute(interaction: CommandInteraction) {
 		interaction.editReply(msg);
 	}
 	else {
-		let msg;
+		let msg = "";
 		if (queue.repeatMode == QueueRepeatMode.OFF)
 			msg = "Pętla jest wyłączona";
 		else if (queue.repeatMode == QueueRepeatMode.TRACK)

@@ -1,4 +1,3 @@
-import { CanvasRenderingContext2D } from "canvas";
 import Point from "./Point.js";
 
 export default class Edge {

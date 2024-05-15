@@ -1,11 +1,9 @@
-import fetch from "node-fetch";
-import joinImages from "../../lib/joinImages";
-import fs from "fs";
-import util from "util";
-import stream from "stream";
+import joinImages from "../../lib/joinImages.js";
+import fs from "node:fs";
+import util from "node:util";
+import stream from "node:stream";
+import { AttachmentBuilder, SlashCommandBuilder, SlashCommandStringOption } from "discord.js";
 const streamPipeline = util.promisify(stream.pipeline);
-import Discord, { CommandInteraction } from "discord.js";
-import { SlashCommandBuilder, SlashCommandStringOption } from "@discordjs/builders";
 
 export const data = new SlashCommandBuilder()
 	.setName("pogoda")
@@ -17,15 +15,21 @@ export const data = new SlashCommandBuilder()
 			.setRequired(false)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").CommandInteraction} interaction 
+ * @returns 
+ */
+export async function execute(interaction) {
 	let title, imgResult;
-	if (interaction.isCommand !== undefined && interaction.isCommand()) {
+	if (interaction.isChatInputCommand !== undefined && interaction.isChatInputCommand()) {
 		await interaction.deferReply();
 
 		let miasto;
 		if (interaction.options.getString("miasto") === null)
 			miasto = "warszawa";
 		else
+			// @ts-expect-error
 			miasto = interaction.options.getString("miasto").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 		const result = await fetch("https://m.meteo.pl/" + miasto + "/60");
 
@@ -36,6 +40,7 @@ export async function execute(interaction: CommandInteraction) {
 
 		const resultText = await result.text();
 		title = resultText.split("<h2 class=\"titlePogoda\"><b><span>")[1].split("</span>")[0];
+		// @ts-expect-error
 		const link = /src="(https:\/\/www\.meteo\.pl\/um\/metco\/mgram_pict\.php\?ntype=0u&fdate=[0-9]+&row=[0-9]+&col=[0-9]+&lang=pl)"/g.exec(resultText)[1];
 		imgResult = await fetch(link, {
 			headers: {
@@ -59,6 +64,7 @@ export async function execute(interaction: CommandInteraction) {
 		if (!result.ok) throw new Error(`Unexpected response ${result.statusText}`);
 		const resultText = await result.text();
 		const imageRegex = /src="(https:\/\/www\.meteo\.pl\/um\/metco\/mgram_pict\.php\?ntype=0u&fdate=[0-9]+&row=406&col=250&lang=pl)"/g;
+		// @ts-expect-error
 		const link = imageRegex.exec(resultText)[1];
 		imgResult = await fetch(link, {
 			headers: {
@@ -76,10 +82,11 @@ export async function execute(interaction: CommandInteraction) {
 		if (!imgResult.ok) throw new Error(`Unexpected response ${result.statusText}`);
 		title = "Warszawa";
 	}
+	// @ts-expect-error
 	await streamPipeline(imgResult.body, fs.createWriteStream("./tmp/weather.png"));
 	joinImages("data/leg60.png", "tmp/weather.png", "tmp/weatherFinal.png");
 
-	const weatherAttachment = new Discord.MessageAttachment("./tmp/weatherFinal.png");
+	const weatherAttachment = new AttachmentBuilder("./tmp/weatherFinal.png");
 	if (interaction.isCommand !== undefined && interaction.isCommand())
 		await interaction.editReply({ content: title + ":", files: [weatherAttachment] });
 	else

@@ -1,9 +1,7 @@
-import { SlashCommandBuilder, SlashCommandStringOption } from "@discordjs/builders";
-import Discord, { ColorResolvable, CommandInteraction } from "discord.js";
-import fs from "fs";
-import config from "../../config.json";
-import * as betsLib from "../../lib/bets";
-import { IBets } from "../../lib/types";
+import { EmbedBuilder, SlashCommandBuilder, SlashCommandStringOption } from "discord.js";
+import fs from "node:fs";
+import config from "../../config.json" with { type: "json" };;
+import * as betsLib from "../../lib/bets.js";
 
 export const data = new SlashCommandBuilder()
 	.setName("bet")
@@ -41,16 +39,26 @@ export const data = new SlashCommandBuilder()
 			.setDescription("Tylko dla administratorów bota")
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").CommandInteraction} interaction 
+ * @returns 
+ */
+export async function execute(interaction) {
+	if (interaction.isChatInputCommand === undefined || !interaction.isChatInputCommand()) {
+		await interaction.reply("Pls slash komenda");
+		return;
+	}
 	if (interaction.options.getSubcommand() == "bet" || interaction.options.getSubcommand() == "zmień") {
 		const now = new Date(Date.now());
-		const content = interaction.options.getString("czas");
+		const content = interaction.options.getString("czas") || "";
 		if (!/[0-2]{1}[0-9]{1}:[0-6]{1}[0-9]{1}:[0-6]{1}[0-9]{1}.[0-9]{3}$|[0-2]{1}[0-9]{1}:[0-6]{1}[0-9]{1}:[0-6]{1}[0-9]{1}$|[0-2]{1}[0-9]{1}:[0-6]{1}[0-9]{1}$/.test(content)) {
 			interaction.reply("Zły format (dozwolone formaty: godzina:minuta, godzina:minuta:sekunda, godzina:minuta:sekunda.milisekunda)");
 			return;
 		}
 
-		const bets: IBets = JSON.parse(fs.readFileSync("./data/bets.json") as unknown as string); // bruh
+		/** @type {import("../../../types.js").IBets} */
+		const bets = JSON.parse(fs.readFileSync("./data/bets.json", "utf-8"));
 
 		if (interaction.user.id in bets && interaction.options.getSubcommand() != "zmień") {
 			interaction.reply("Już się założyłeś. <:qiqifallen:936561167709646860>");
@@ -84,7 +92,8 @@ export async function execute(interaction: CommandInteraction) {
 			interaction.reply("Zmieniono!");
 	}
 	else if (interaction.options.getSubcommand() == "list") {
-		const bets: IBets = JSON.parse(fs.readFileSync("./data/bets.json") as unknown as string);
+		/** @type {import("../../../types.js").IBets} */
+		const bets = JSON.parse(fs.readFileSync("./data/bets.json", "utf-8"));
 
 		const users = [];
 		for (const [user, time] of Object.entries(bets)) {
@@ -105,8 +114,8 @@ export async function execute(interaction: CommandInteraction) {
 		if (desc == "")
 			desc = "Jeszcze nikt się nie założył <:widenatchuz:706934562961358888>";
 
-		const embed = new Discord.MessageEmbed()
-			.setColor(("#" + Math.floor(Math.random() * 16777215).toString(16)) as ColorResolvable)
+		const embed = new EmbedBuilder()
+			.setColor(/** @type {import("discord.js").ColorResolvable} */("#" + Math.floor(Math.random() * 16777215).toString(16)))
 			.setTitle("Aktualne zakłady")
 			.setDescription(desc);
 

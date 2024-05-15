@@ -1,7 +1,7 @@
 import * as jajco from "../jajco.js";
 import { hashFile, hashFileFromMessageContent } from "../hashFile.js";
 import archiwum from "../archiwum.js";
-import config from "../../config.json";
+import config from "../../config.json" with { type: "json" };;
 import fs from "node:fs";
 import { repeatingDigitsText } from "../types.js";
 import { onMessage } from "../../commands/games/kwadraty.js";

@@ -1,9 +1,8 @@
 // @ts-nocheck
-"use strict";
 
-const Board = require("./pilkarzykiRenderer.js");
-const ExtBoard = require("./bot.js");
-const fs = require("fs");
+import Board from "./pilkarzykiRenderer.js";
+import ExtBoard from "./bot.js";
+import fs from "node:fs";
 
 const DRAW_BOARDS = true;
 
@@ -13,14 +12,14 @@ const DRAW_BOARDS = true;
  *
  */
 
-const evalQuad = require("./evaluationFunctions/evaluationQuad.js");
-const evalQuadReverse = require("./evaluationFunctions/evaluationQuadReverse.js");
-const evalBFS = require("./evaluationFunctions/evaluationBFS.js");
-const evalBFSReverse = require("./evaluationFunctions/evaluationBFSReverse.js");
-const evalBFSCubic = require("./evaluationFunctions/evaluationBFSCubic.js");
-const evalBFSCubicReverse = require("./evaluationFunctions/evaluationBFSCubicReverse.js");
-const evalBFSfunny = require("./evaluationFunctions/evaluationBFSfunny.js");
-const evalBFSfunnyReverse = require("./evaluationFunctions/evaluationBFSfunnyReverse.js");
+import evalQuad from "./evaluationFunctions/evaluationQuad.js";
+import evalQuadReverse from "./evaluationFunctions/evaluationQuadReverse.js";
+import evalBFS from "./evaluationFunctions/evaluationBFS.js";
+import evalBFSReverse from "./evaluationFunctions/evaluationBFSReverse.js";
+import evalBFSCubic from "./evaluationFunctions/evaluationBFSCubic.js";
+import evalBFSCubicReverse from "./evaluationFunctions/evaluationBFSCubicReverse.js";
+import evalBFSfunny from "./evaluationFunctions/evaluationBFSfunny.js";
+import evalBFSfunnyReverse from "./evaluationFunctions/evaluationBFSfunnyReverse.js";
 
 function play(eval1, eval2, depth, cleanFiles) {
 	console.log("Playing %s vs %s...", eval1.name, eval2.name);

@@ -1,51 +1,47 @@
-import { SlashCommandBuilder, SlashCommandUserOption } from "@discordjs/builders";
-import { APIMessage } from "discord-api-types";
-import Discord, { ButtonInteraction, Client, CommandInteraction, Message, MessageButtonStyleResolvable, TextChannel } from "discord.js";
 import Elo from "elo-rating";
-import fs from "fs";
+import fs from "node:fs";
 import { performance } from "perf_hooks";
-import ExtBoard from "../../bot";
-import config from "../../config.json";
-import Board from "../../lib/pilkarzyki/2players";
-import { IRanking } from "../../lib/types";
+import ExtBoard from "../../bot.js";
+import config from "../../config.json" with { type: "json" };;
+import Board from "../../lib/pilkarzyki/2players.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
 
-interface Iuids {
-	[uid: string]: number
-}
+/** @typedef {{[uid: string]: number}} Iuids */
 
-interface IBots {
-	[bid: number]: {
-		gameID: number,
-		ext_board: ExtBoard,
-		depth: number,
-		playerTurn: boolean
-	}
-}
+/** @typedef {{ [bid: number]: { gameID: number, ext_board: ExtBoard, depth: number, playerTurn: boolean; }; }} IBots */
 
-interface IBoards {
-	[id: string]: Board
-}
+/** @typedef {{[id: string]: Board;}} IBoards */
 
-interface IAccept {
-	usernames: Array<string>,
-	uids: Array<string>,
-	to: string, // uid
-	from: string, // uid
-	message?: APIMessage | Message<boolean>
-}
+/** @typedef { {usernames: Array<string>, uids: Array<string>, to: string, from: string, message?: import("discord.js").APIMessage | import("discord.js").Message<boolean>;} } IAccept */
+// to: string, // uid
+// from: string, // uid
 
-const uids: Iuids = {};
-const bots: IBots = {};
-const boards: IBoards = {};
+/** @type {Iuids} */
+const uids = {};
+/** @type {IBots} */
+const bots = {};
+/** @type {IBoards} */
+const boards = {};
 let gameID = 1;
 let botID = 1;
-let accepts: Array<IAccept> = [];
+/** @type {IAccept[]} */
+let accepts = [];
 
-function sleep(ms: number) {
+/**
+ * 
+ * @param {number} ms 
+ * @returns 
+ */
+function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function getButtons(id: number): Array<Discord.MessageActionRow> {
+/**
+ * 
+ * @param {number} id 
+ * @returns {Array<ActionRowBuilder<ButtonBuilder>> | undefined}
+ */
+function getButtons(id) {
 	let indexes;
 	try {
 		indexes = boards[id].possibleMovesIndexes();
@@ -54,77 +50,78 @@ function getButtons(id: number): Array<Discord.MessageActionRow> {
 		console.log(`Couldnt get move indexes for board_id = ${id} (probably doesnt exist)`);
 		return;
 	}
-	let style: MessageButtonStyleResolvable;
+	/** @type {ButtonStyle} */
+	let style;
 	if (boards[id].turn == 0)
-		style = "PRIMARY";
+		style = ButtonStyle.Primary;
 	else
-		style = "DANGER";
+		style = ButtonStyle.Danger;
 
-	const row1 = new Discord.MessageActionRow()
+	const row1 = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#0")
 				.setLabel("↖")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(0)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#1")
 				.setLabel("⬆")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(1)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#2")
 				.setLabel("↗")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(2))
-		);
-	const row2 = new Discord.MessageActionRow()
+		));
+	const row2 = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#3")
 				.setLabel("⬅")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(3)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#disabled")
 				.setLabel("xd")
 				.setStyle(style)
 				.setDisabled(true),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#4")
 				.setLabel("➡")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(4))
-		);
-	const row3 = new Discord.MessageActionRow()
+		));
+	const row3 = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#5")
 				.setLabel("↙")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(5)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#6")
 				.setLabel("⬇")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(6)),
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#7")
 				.setLabel("↘")
 				.setStyle(style)
 				.setDisabled(!indexes.includes(7))
-		);
-	const row4 = new Discord.MessageActionRow()
+		));
+	const row4 = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#remis")
 				.setLabel("Remis")
-				.setStyle("SECONDARY"),
-			new Discord.MessageButton()
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
 				.setCustomId("pilkarzyki#surrender")
 				.setLabel("Poddaj się")
-				.setStyle("SECONDARY")
-		);
+				.setStyle(ButtonStyle.Secondary)
+		));
 
 	return [row1, row2, row3, row4];
 }
@@ -156,7 +153,12 @@ export const data = new SlashCommandBuilder()
 			)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").Interaction} interaction 
+ * @returns 
+ */
+export async function execute(interaction) {
 	if (interaction.isButton()) {
 		const mainMessage = await interaction.update({ content: interaction.message.content, fetchReply: true });
 		interaction.customId = interaction.customId.slice(interaction.customId.indexOf("#") + 1);
@@ -206,7 +208,8 @@ export async function execute(interaction: CommandInteraction) {
 		if (boards[id].win != -1) {
 			const gameuids = boards[id].uids;
 			updateLongestGame(id, gameuids);
-			const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
+			/** @type {import("../../../types.js").IRanking} */
+			const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
 
 			const player1 = ranking.pilkarzyki[gameuids[0]].rating;
 			const player2 = ranking.pilkarzyki[gameuids[1]].rating;
@@ -234,7 +237,7 @@ export async function execute(interaction: CommandInteraction) {
 		}
 		return;
 	}
-	else if (interaction.isCommand()) {
+	else if (interaction.isChatInputCommand()) {
 		const message = await interaction.deferReply({ fetchReply: true });
 		let usernames;
 		const id = gameID;
@@ -242,8 +245,10 @@ export async function execute(interaction: CommandInteraction) {
 
 		if (interaction.options.getSubcommand() == "player") {
 			const secondUser = interaction.options.getUser("gracz");
+			// @ts-expect-error
 			const uid2 = secondUser.id;
 			const uid1 = interaction.user.id;
+			// @ts-expect-error
 			usernames = [interaction.user.username, secondUser.username];
 
 			if (uids[uid1] != undefined) {
@@ -266,7 +271,8 @@ export async function execute(interaction: CommandInteraction) {
 				}
 			}
 
-			const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
+			/** @type {import("../../../types.js").IRanking} */
+			const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
 			if (ranking.pilkarzyki[uid1] == undefined)
 				ranking.pilkarzyki[uid1] = {
 					lost: 0,
@@ -282,24 +288,25 @@ export async function execute(interaction: CommandInteraction) {
 
 			fs.writeFileSync("./data/ranking.json", JSON.stringify(ranking));
 
-			const newAccept: IAccept = {
+			/** @type {IAccept} */
+			const newAccept = {
 				usernames: usernames,
 				uids: [uid1, uid2],
 				to: uid2,
 				from: uid1
 			};
 
-			const row = new Discord.MessageActionRow()
+			const row = /** @type {ActionRowBuilder<ButtonBuilder>} */(new ActionRowBuilder()
 				.addComponents(
-					new Discord.MessageButton()
+					new ButtonBuilder()
 						.setLabel("Tak")
 						.setCustomId("pilkarzyki#acceptYes#" + uid1 + "#" + uid2)
-						.setStyle("PRIMARY"),
-					new Discord.MessageButton()
+						.setStyle(ButtonStyle.Primary),
+					new ButtonBuilder()
 						.setLabel("Nie")
 						.setCustomId("pilkarzyki#acceptNo#" + uid1 + "#" + uid2)
-						.setStyle("DANGER")
-				);
+						.setStyle(ButtonStyle.Danger)
+				));
 
 			newAccept.message = await interaction.editReply({
 				content: `<@${uid2}>: ${usernames[0]} chce z tobą zagrać`,
@@ -333,7 +340,8 @@ export async function execute(interaction: CommandInteraction) {
 			boards[id] = new Board(50, 50, 50, 3, [uid, bid.toString()], usernames, id, true);
 			bots[bid] = {
 				gameID: id,
-				ext_board: new ExtBoard(boards[id], 9, 13, require(evalFunctionPath)),
+				ext_board: new ExtBoard(boards[id], 9, 13, await import(evalFunctionPath)),
+				// @ts-expect-error
 				depth: depth,
 				playerTurn: true
 			};
@@ -344,7 +352,13 @@ export async function execute(interaction: CommandInteraction) {
 	}
 }
 
-async function acceptManager(interaction: ButtonInteraction, mainMessage: APIMessage | Message<boolean>) {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @param {import("discord.js").APIMessage | import("discord.js").Message<boolean>} mainMessage 
+ * @returns 
+ */
+async function acceptManager(interaction, mainMessage) {
 	const buttonUids = interaction.customId.split("#");
 	const inviter = buttonUids[1];
 	const invited = buttonUids[2];
@@ -358,7 +372,7 @@ async function acceptManager(interaction: ButtonInteraction, mainMessage: APIMes
 			return;
 
 		const msg = `${accept.usernames[1]} nie zaakceptował gry z ${accept.usernames[0]}`;
-		await (accept.message as Message).edit({ content: msg, components: [] });
+		await /** @type {import("discord.js").Message} */(accept.message).edit({ content: msg, components: [] });
 		removeAcceptByUids(inviter, invited);
 		return;
 	}
@@ -367,12 +381,14 @@ async function acceptManager(interaction: ButtonInteraction, mainMessage: APIMes
 		if (accept == undefined)
 			return;
 
-		const newAccepts: Array<IAccept> = [];
+		/** @type {IAccept[]} */
+		const newAccepts = [];
 		for (const acc of accepts) {
 			if (acc.to != invited && acc.from != inviter)
 				newAccepts.push(acc);
 			else
-				(acc.message as Message).edit({ content: acc.message.content, components: [] });
+				// @ts-expect-error
+				/** @type {import("discord.js").Message} */(acc.message).edit({ content: acc.message.content, components: [] });
 		}
 		accepts = newAccepts;
 
@@ -386,13 +402,20 @@ async function acceptManager(interaction: ButtonInteraction, mainMessage: APIMes
 	}
 }
 
-async function surrenderManager(interaction: ButtonInteraction, mainMessage: APIMessage | Message<boolean>) {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @param {import("discord.js").APIMessage | import("discord.js").Message<boolean>} mainMessage 
+ * @returns 
+ */
+async function surrenderManager(interaction, mainMessage) {
 	const uid = interaction.user.id;
 	const id = uids[uid];
 
 	if (boards[id].withBot) {
 		sendBoard(id, interaction.client, mainMessage, `<@${uid}> poddał się`, false);
-		const bid: number = parseInt(boards[id].uids[1 - boards[id].uids.indexOf(uid)]);
+		/** @type {number} */
+		const bid = parseInt(boards[id].uids[1 - boards[id].uids.indexOf(uid)]);
 
 		delete bots[bid];
 		delete boards[id];
@@ -402,7 +425,8 @@ async function surrenderManager(interaction: ButtonInteraction, mainMessage: API
 	else {
 		const gameuids = boards[id].uids;
 		updateLongestGame(id, gameuids);
-		const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
+		/** @type {import("../../../types.js").IRanking} */
+		const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
 
 		const rating1 = ranking.pilkarzyki[gameuids[0]].rating;
 		const rating2 = ranking.pilkarzyki[gameuids[1]].rating;
@@ -432,7 +456,13 @@ async function surrenderManager(interaction: ButtonInteraction, mainMessage: API
 	}
 }
 
-async function remisManager(interaction: ButtonInteraction, mainMessage: APIMessage | Message<boolean>): Promise<boolean> {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @param {import("discord.js").APIMessage | import("discord.js").Message<boolean>} mainMessage 
+ * @returns {Promise<boolean>}
+ */
+async function remisManager(interaction, mainMessage) {
 	const uid = interaction.user.id;
 	const id = uids[uid];
 
@@ -455,7 +485,12 @@ async function remisManager(interaction: ButtonInteraction, mainMessage: APIMess
 	return false;
 }
 
-async function buttonWithoutBot(interaction: ButtonInteraction) {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @returns 
+ */
+async function buttonWithoutBot(interaction) {
 	const uid = interaction.user.id;
 	const id = uids[uid];
 
@@ -476,7 +511,8 @@ async function buttonWithoutBot(interaction: ButtonInteraction) {
 		boards[id].longestMove[uid] = Math.max(boards[id].longestMove[uid], boards[id].currMoveLen);
 		boards[id].currMoveLen = 0;
 
-		const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
+		/** @type {import("../../../types.js").IRanking} */
+		const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
 		if (ranking.najdluzszyruch[uid] == undefined)
 			ranking.najdluzszyruch[uid] = 0;
 		ranking.najdluzszyruch[uid] = Math.max(ranking.najdluzszyruch[uid], boards[id].longestMove[uid]);
@@ -484,7 +520,13 @@ async function buttonWithoutBot(interaction: ButtonInteraction) {
 	}
 }
 
-async function buttonWithBot(interaction: ButtonInteraction, mainMessage: APIMessage | Message<boolean>) {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @param {import("discord.js").APIMessage | import("discord.js").Message<boolean>} mainMessage 
+ * @returns 
+ */
+async function buttonWithBot(interaction, mainMessage) {
 	const uid = interaction.user.id;
 	const id = uids[uid];
 	const bid = parseInt(boards[id].uids[1 - boards[id].uids.indexOf(uid)]);
@@ -584,8 +626,14 @@ async function buttonWithBot(interaction: ButtonInteraction, mainMessage: APIMes
 	bots[bid].playerTurn = true;
 }
 
-function updateLongestGame(gameid: number, gameuids: Array<string>) {
-	const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
+/**
+ * 
+ * @param {number} gameid 
+ * @param {string[]} gameuids 
+ */
+function updateLongestGame(gameid, gameuids) {
+	/** @type {import("../../../types.js").IRanking} */
+	const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf8"));
 	const tempuids = [...gameuids];
 	let uidsString = "";
 
@@ -600,14 +648,26 @@ function updateLongestGame(gameid: number, gameuids: Array<string>) {
 	fs.writeFileSync("./data/ranking.json", JSON.stringify(ranking));
 }
 
-function getAcceptByUids(inviter: string, invited: string): IAccept | undefined {
+/**
+ * 
+ * @param {string} inviter 
+ * @param {string} invited 
+ * @returns {IAccept | undefined}
+ */
+function getAcceptByUids(inviter, invited) {
 	for (const accept of accepts)
 		if (accept.to == invited && accept.from == inviter)
 			return accept;
 	return undefined;
 }
 
-function removeAcceptByUids(inviter: string, invited: string): boolean {
+/**
+ * 
+ * @param {string} inviter 
+ * @param {string} invited 
+ * @returns {boolean}
+ */
+function removeAcceptByUids(inviter, invited) {
 	for (let i = 0; i < accepts.length; i++) {
 		if (accepts[i].to == invited && accepts[i].from == inviter) {
 			accepts.splice(i, 1);
@@ -617,7 +677,16 @@ function removeAcceptByUids(inviter: string, invited: string): boolean {
 	return false;
 }
 
-async function sendBoard(id: number, client: Client, message: APIMessage | Message<boolean>, content: string, components = true, interaction: CommandInteraction = undefined) {
+/**
+ * 
+ * @param {number} id 
+ * @param {import("discord.js").Client} client 
+ * @param {import("discord.js").APIMessage | import("discord.js").Message<boolean>} message 
+ * @param {string} content 
+ * @param {boolean} components 
+ * @param {import("discord.js").CommandInteraction | undefined} interaction 
+ */
+async function sendBoard(id, client, message, content, components = true, interaction = undefined) {
 	try {
 		boards[id].draw();
 	}
@@ -625,21 +694,23 @@ async function sendBoard(id: number, client: Client, message: APIMessage | Messa
 		console.error("Couldnt draw board (Probably doesnt exist)");
 	}
 
-	const attachment = new Discord.MessageAttachment(`./tmp/boardPilkarzyki${id}.png`);
-	const img = await (client.guilds.cache.get(config.junkChannel.guild).channels.cache.get(config.junkChannel.channel) as TextChannel).send({ files: [attachment] });
+	const attachment = new AttachmentBuilder(`./tmp/boardPilkarzyki${id}.png`);
+	// @ts-expect-error
+	const img = await /** @type {import("discord.js").TextChannel} */(client.guilds.cache.get(config.junkChannel.guild).channels.cache.get(config.junkChannel.channel)).send({ files: [attachment] });
+	// @ts-expect-error
 	content += `\n${img.attachments.first().url}`;
 	const messagePayload = {
 		content: content,
-		components: (components ? getButtons(id) : [])
+		components: (components ? (getButtons(id) ?? []) : [])
 	};
 
 	if (interaction)
 		message = await interaction.editReply(messagePayload);
 	else
-		message = await (message as Message).edit(messagePayload);
+		message = await /** @type {import("discord.js").Message<boolean>} */(message).edit(messagePayload);
 
 	try {
-		boards[id].message = (message as Message<boolean>);
+		boards[id].message = /** @type {import("discord.js").Message<boolean>} */(message);
 	}
 	catch (error) {
 		console.error("Couldn't set boards[id].message (probably boards[id] doesnt exist)");

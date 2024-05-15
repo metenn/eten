@@ -1,5 +1,3 @@
-import { CanvasRenderingContext2D } from "canvas";
-
 export default class Point {
 	/** @type {number} */
 	index;

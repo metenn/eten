@@ -1,7 +1,8 @@
-import config from "../config.json";
+import config from "../config.json" with { type: "json" };;
 import fs from "node:fs";
 import { joinVoiceChannel, createAudioPlayer, createAudioResource } from "@discordjs/voice";
 import { client } from "../index.js";
+import { ChannelType } from "discord.js";
 const player = createAudioPlayer();
 
 /**
@@ -20,7 +21,7 @@ async function randomSoundOnVoice() {
 	const channels = [];
 
 	client.guilds.cache.forEach(guild => {
-		for (const channel of guild.channels.cache.filter(c => c.type == "GUILD_VOICE").values())
+		for (const channel of guild.channels.cache.filter(c => c.type == ChannelType.GuildVoice).values())
 			channels.push(/** @type {import("discord.js").VoiceChannel} */(channel));
 	});
 
@@ -32,7 +33,7 @@ async function randomSoundOnVoice() {
 
 		let isAlreadyOnVC = false;
 		// @ts-expect-error
-		if (client.guilds.cache.get(channel.guildId).me.voice.channel)
+		if (client.guilds.cache.get(channel.guildId).members.me.voice.channel)
 			isAlreadyOnVC = true;
 
 		if (isAlreadyOnVC) // TODO ~~lepiej to~~ nwm o co mi tu chodzilo zeby lepiej zrobic

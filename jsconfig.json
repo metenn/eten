@@ -15,11 +15,12 @@
         "resolveJsonModule": true, // Special
         // "resolveJsonModule": true,
         // "noUncheckedIndexedAccess": true, // Broken
-        "skipLibCheck": false // Poorly documented, doesn't check own project files if true (default)
+        "skipLibCheck": true // Poorly documented, doesn't check own project files if true (default)
     },
     // Files we wish to typecheck
     "include": [
-        "src/**/*"
-, "types.d.ts"    ]
+        "src/**/*",
+        "types.d.ts"
+    ]
 }
 // Check with tsc -p jsconfig.json

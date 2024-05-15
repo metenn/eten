@@ -1,5 +1,4 @@
-import fetch from "node-fetch";
-import config from "../config.json";
+import config from "../config.json" with { type: "json" };;
 import cron from "cron";
 import { client } from "../index.js";
 
@@ -7,7 +6,7 @@ import { client } from "../index.js";
 async function getCount() {
 	// @ts-ignore
 	const result = await fetch("https://api.hypixel.net/v2/counts", { headers: { "API-Key": config.hypixelApiKey } });
-	const json = await result.json();
+	const json = /** @type {any} */(await result.json());
 	if (json.success === false) {
 		console.error("Failed to get player count");
 		console.error(json);
@@ -27,7 +26,7 @@ async function check() {
 		threshold = true;
 		const channel = client.channels.cache.get(config.miniwallsChannel);
 		// @ts-expect-error
-		if (channel.isText()) {
+		if (channel.isTextBased()) {
 			channel.send(`@everyone Mini Walls gaming (${count} graczy!!!!`);
 		}
 	}

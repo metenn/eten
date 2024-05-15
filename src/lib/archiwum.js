@@ -1,12 +1,11 @@
 import path from "node:path";
-import fetch from "node-fetch";
 import util from "node:util";
 import stream from "node:stream";
 const streamPipeline = util.promisify(stream.pipeline);
 // const streamPipeline = util.promisify(require('stream').pipeline)
 import formData from "form-data";
 import fs from "node:fs";
-import config from "../config.json";
+import config from "../config.json" with { type: "json" };;
 
 /**
  * 
@@ -23,7 +22,8 @@ export default async function (message) {
 		// @ts-expect-error
 		const url = message.attachments.first().url;
 		const ext = path.extname(url);
-		const res = await fetch(url);
+		const res = await fetch(url, {});
+		// @ts-expect-error
 		await streamPipeline(res.body, fs.createWriteStream("tmp/tmparchive" + ext));
 
 		const form = new formData();

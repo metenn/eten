@@ -1,37 +1,32 @@
-import Board from "../../lib/kwadraty/renderer";
-import Discord, { ButtonInteraction, Client, CommandInteraction, Message, TextChannel } from "discord.js";
-import { APIMessage } from "discord-api-types";
+import Board from "../../lib/kwadraty/renderer.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Client, CommandInteraction, Message, TextChannel, SlashCommandBuilder, SlashCommandUserOption, AttachmentBuilder } from "discord.js";
 import fs from "fs";
 import Elo from "elo-rating";
-import config from "../../config.json";
-import { SlashCommandBuilder, SlashCommandUserOption } from "@discordjs/builders";
-import { IRanking } from "../../lib/types";
+import config from "../../config.json" with { type: "json" };;
 
-interface IAccept {
-	usernames: Array<string>,
-	uids: Array<string>,
-	from: string,
-	to: string,
-	message?: APIMessage | Message<boolean>
-}
+/** @typedef {{ usernames: Array<string>, uids: Array<string>, from: string, to: string, message?: import("discord.js").APIMessage|import("discord.js").Message<boolean>; }} IAccept */
 
-const uids: { [uid: string]: number } = {};
-const boards: { [id: number]: Board } = {};
-let accepts: Array<IAccept> = [];
+/** @type {{ [uid: string]: number }} */
+const uids = {};
+/** @type {{ [id: number]: Board }} */
+const boards = {};
+/** @type {IAccept[]} */
+let accepts = [];
 let gameID = 1;
 
 function getButtons() {
-	const row = new Discord.MessageActionRow()
+
+	const row = /** @type {ActionRowBuilder<ButtonBuilder>} */ (new ActionRowBuilder()
 		.addComponents(
-			new Discord.MessageButton()
+			new ButtonBuilder()
 				.setCustomId("kwadraty#remis")
 				.setLabel("Remis")
-				.setStyle("SECONDARY"),
-			new Discord.MessageButton()
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
 				.setCustomId("kwadraty#surrender")
 				.setLabel("Poddaj się")
-				.setStyle("DANGER")
-		);
+				.setStyle(ButtonStyle.Danger)
+		));
 
 	return [row];
 }
@@ -46,8 +41,14 @@ export const data = new SlashCommandBuilder()
 			.setRequired(true)
 	);
 
-export async function execute(interaction: CommandInteraction) {
+/**
+ * 
+ * @param {import("discord.js").Interaction} interaction
+ * @returns 
+ */
+export async function execute(interaction) {
 	if (interaction.isButton()) {
+		interaction;
 		const mainMessage = await interaction.update({ content: interaction.message.content, fetchReply: true });
 		interaction.customId = interaction.customId.slice(interaction.customId.indexOf("#") + 1);
 
@@ -69,10 +70,12 @@ export async function execute(interaction: CommandInteraction) {
 			return;
 		}
 	}
-	else if (interaction.isCommand()) {
+	else if (interaction.isChatInputCommand()) {
 		const secondUser = interaction.options.getUser("gracz");
 		const uid1 = interaction.user.id;
+		// @ts-expect-error
 		const uid2 = secondUser.id;
+		// @ts-expect-error
 		const usernames = [interaction.user.username, secondUser.username];
 
 		if (uids[uid1]) {
@@ -96,7 +99,8 @@ export async function execute(interaction: CommandInteraction) {
 			}
 		}
 
-		const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+		/** @type {import("../../../types.js").IRanking} */
+		const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
 		if (ranking.kwadraty[uid1] === undefined)
 			ranking.kwadraty[uid1] = { lost: 0, won: 0, rating: (ranking.kwadraty[uid1].rating ? ranking.kwadraty[uid1].rating : 1500) };
 
@@ -105,24 +109,25 @@ export async function execute(interaction: CommandInteraction) {
 
 		fs.writeFileSync("./data/ranking.json", JSON.stringify(ranking));
 
-		const accept: IAccept = {
+		/** @type {IAccept} */
+		const accept = {
 			usernames: usernames,
 			uids: [uid1, uid2],
 			to: uid2,
 			from: uid1
 		};
 
-		const row = new Discord.MessageActionRow()
+		const row = /** @type {ActionRowBuilder<ButtonBuilder>} */ (new ActionRowBuilder()
 			.addComponents(
-				new Discord.MessageButton()
+				new ButtonBuilder()
 					.setLabel("Tak")
 					.setCustomId("kwadraty#acceptYes#" + uid1 + "#" + uid2)
-					.setStyle("PRIMARY"),
-				new Discord.MessageButton()
+					.setStyle(ButtonStyle.Primary),
+				new ButtonBuilder()
 					.setLabel("Nie")
 					.setCustomId("kwadraty#acceptNo#" + uid1 + "#" + uid2)
-					.setStyle("DANGER")
-			);
+					.setStyle(ButtonStyle.Danger)
+			));
 
 		accept.message = await interaction.reply({
 			fetchReply: true,
@@ -134,7 +139,12 @@ export async function execute(interaction: CommandInteraction) {
 	}
 }
 
-export async function onMessage(message: Message) {
+/**
+ * 
+ * @param {import("discord.js").Message} message 
+ * @returns 
+ */
+export async function onMessage(message) {
 	const uid = message.author.id;
 
 	if (!uids[uid])
@@ -164,12 +174,14 @@ export async function onMessage(message: Message) {
 	else
 		components = false;
 
+	// @ts-expect-error
 	await sendBoard(id, message.client, boards[id].message, msg, components);
 
 	message.delete();
 
 	if (boards[id].win != -1) {
-		const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+		/** @type {import("../../../types.js").IRanking} */
+		const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
 		const gameuids = boards[id].uids;
 
 		const player1 = ranking.kwadraty[gameuids[0]].rating;
@@ -199,7 +211,13 @@ export async function onMessage(message: Message) {
 	}
 }
 
-async function remisManager(interaction: ButtonInteraction, mainMessage: APIMessage | Message<boolean>) {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @param {import("discord.js").APIMessage|import("discord.js").Message<boolean>} mainMessage 
+ * @returns 
+ */
+async function remisManager(interaction, mainMessage) {
 	const uid = interaction.user.id, id = uids[uid];
 
 	if (boards[id].remis.includes(uid))
@@ -217,9 +235,16 @@ async function remisManager(interaction: ButtonInteraction, mainMessage: APIMess
 	}
 }
 
-async function surrenderManager(interaction: ButtonInteraction, mainMessage: APIMessage | Message<boolean>) {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @param {import("discord.js").APIMessage|import("discord.js").Message<boolean>} mainMessage 
+ * @returns 
+ */
+async function surrenderManager(interaction, mainMessage) {
 	const uid = interaction.user.id;
-	const ranking: IRanking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+	/** @type {import("../../../types.js").IRanking} */
+	const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
 	const gameuids = boards[uids[uid]].uids;
 
 	const rating1 = ranking.kwadraty[gameuids[0]].rating;
@@ -251,7 +276,13 @@ async function surrenderManager(interaction: ButtonInteraction, mainMessage: API
 	delete uids[uid];
 }
 
-async function acceptManager(interaction: ButtonInteraction, mainMessage: APIMessage | Message<boolean>) {
+/**
+ * 
+ * @param {import("discord.js").ButtonInteraction} interaction 
+ * @param {import("discord.js").APIMessage|import("discord.js").Message<boolean>} mainMessage 
+ * @returns 
+ */
+async function acceptManager(interaction, mainMessage) {
 	const uidsButton = interaction.customId.split("#");
 	const from = uidsButton[1];
 	const to = uidsButton[2];
@@ -264,7 +295,7 @@ async function acceptManager(interaction: ButtonInteraction, mainMessage: APIMes
 			const accept = accepts[i];
 			if (accept.to == to && accept.from == from) {
 				const msg = `${accept.usernames[1]} nie zaakceptował gry z ${accept.usernames[0]}`;
-				(accept.message as Message).edit({ content: msg, components: [] });
+				/** @type {Message} */(accept.message).edit({ content: msg, components: [] });
 				accepts.splice(i, 1);
 				return;
 			}
@@ -287,7 +318,8 @@ async function acceptManager(interaction: ButtonInteraction, mainMessage: APIMes
 			if (a.from != from && a.to != to)
 				newAccepts.push(a);
 			else
-				(a.message as Message).edit({ content: a.message.content, components: [] });
+				// @ts-expect-error
+				/** @type {Message} */(a.message).edit({ content: a.message.content, components: [] });
 		}
 
 		accepts = newAccepts;
@@ -297,13 +329,22 @@ async function acceptManager(interaction: ButtonInteraction, mainMessage: APIMes
 		uids[to] = id;
 
 		boards[id] = new Board(50, 50, 50, 3, [from, to], accept.usernames, id);
-		boards[id].message = mainMessage as Message;
+		boards[id].message = /** @type {Message} */(mainMessage);
 
 		sendBoard(id, interaction.client, mainMessage, `Tura: <@${boards[id].turnUID}>\n`);
 	}
 }
 
-async function sendBoard(id: number, client: Client, message: APIMessage | Message<boolean>, content: string, components = true, interaction: CommandInteraction = undefined) {
+/**
+ * 
+ * @param {number} id 
+ * @param {Client} client 
+ * @param {import("discord.js").APIMessage|import("discord.js").Message<boolean>} message 
+ * @param {string} content 
+ * @param {boolean} components 
+ * @param {import("discord.js").CommandInteraction | undefined} interaction 
+ */
+async function sendBoard(id, client, message, content, components = true, interaction = undefined) {
 	try {
 		boards[id].draw();
 	}
@@ -311,8 +352,10 @@ async function sendBoard(id: number, client: Client, message: APIMessage | Messa
 		console.error("Couldnt draw board (Probably doesnt exist)");
 	}
 
-	const attachment = new Discord.MessageAttachment(`./tmp/boardKwadraty${id}.png`);
-	const img = await (client.guilds.cache.get(config.junkChannel.guild).channels.cache.get(config.junkChannel.channel) as TextChannel).send({ files: [attachment] });
+	const attachment = new AttachmentBuilder(`./tmp/boardKwadraty${id}.png`);
+	// @ts-expect-error
+	const img = await /** @type {import("discord.js").TextChannel} */ (client.guilds.cache.get(config.junkChannel.guild).channels.cache.get(config.junkChannel.channel)).send({ files: [attachment] });
+	// @ts-expect-error
 	content += `\n${img.attachments.first().url}`;
 	const messagePayload = {
 		content: content,
@@ -322,10 +365,10 @@ async function sendBoard(id: number, client: Client, message: APIMessage | Messa
 	if (interaction)
 		message = await interaction.editReply(messagePayload);
 	else
-		message = await (message as Message).edit(messagePayload);
+		message = await /** @type {Message} */(message).edit(messagePayload);
 
 	try {
-		boards[id].message = (message as Message<boolean>);
+		boards[id].message = /** @type {Message<boolean>} */(message);
 	}
 	catch (error) {
 		console.error("Couldn't set boards[id].message (probably boards[id] doesnt exist)");

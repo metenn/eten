@@ -1,15 +1,13 @@
 // @ts-nocheck
-"use strict";
-
-const PriorityQueue = require("js-priority-queue");
-const fs = require("fs");
+import PriorityQueue from "js-priority-queue";
+import fs from "node:fs";
 
 const directions = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
 // var DEBUG = false
 
 const SAVE_PATH = "tmp/";
 
-module.exports = class ExtBoard {
+export default class ExtBoard {
 	constructor(board, size_hor, size_ver, evalFunc) {
 		this.ball = [board.ball.x, board.ball.y];
 		this.graph = new Array(size_ver);
