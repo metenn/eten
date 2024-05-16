@@ -31,35 +31,39 @@ export async function execute(interaction) {
 		else
 			// @ts-expect-error
 			miasto = interaction.options.getString("miasto").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-		const result = await fetch("https://m.meteo.pl/" + miasto + "/60");
 
-		if (result.status == 404) {
-			interaction.editReply("Złe miasto");
+		if (miasto != "warszawa") {
+			interaction.editReply("Nie chce mi sie bardziej naprawiac");
 			return;
 		}
+		title = "Warszawa";
 
-		const resultText = await result.text();
-		title = resultText.split("<h2 class=\"titlePogoda\"><b><span>")[1].split("</span>")[0];
-		// @ts-expect-error
-		const link = /src="(https:\/\/www\.meteo\.pl\/um\/metco\/mgram_pict\.php\?ntype=0u&fdate=[0-9]+&row=[0-9]+&col=[0-9]+&lang=pl)"/g.exec(resultText)[1];
-		imgResult = await fetch(link, {
-			headers: {
-				Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-				"Accept-Encoding": "gzip, deflate, br",
-				"Accept-Language": "en-GB,en;q=0.9",
-				Host: "www.meteo.pl",
-				Referer: "https://m.meteo.pl/",
-				"Sec-Fetch-Dest": "image",
-				"Sec-Fetch-Mode": "no-cors",
-				"Sec-Fetch-Site": "same-site",
-				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
-			}
-		});
+		// const resultText = await result.text();
+		// title = resultText.split("<h2 class=\"titlePogoda\"><b><span>")[1].split("</span>")[0];
+		// // @ts-expect-error
+		// const link = /src="(https:\/\/www\.meteo\.pl\/um\/metco\/mgram_pict\.php\?ntype=0u&fdate=[0-9]+&row=[0-9]+&col=[0-9]+&lang=pl)"/g.exec(resultText)[1];
+		// imgResult = await fetch(link, {
+		// 	headers: {
+		// 		Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+		// 		"Accept-Encoding": "gzip, deflate, br",
+		// 		"Accept-Language": "en-GB,en;q=0.9",
+		// 		Host: "www.meteo.pl",
+		// 		Referer: "https://m.meteo.pl/",
+		// 		"Sec-Fetch-Dest": "image",
+		// 		"Sec-Fetch-Mode": "no-cors",
+		// 		"Sec-Fetch-Site": "same-site",
+		// 		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36"
+		// 	}
+		// });
+
+		const date = new Date();
+		const link = `https://old.meteo.pl/um/metco/mgram_pict.php?ntype=0u&fdate=${date.getFullYear().toString().padStart(4, '0')}${(date.getMonth() + 1).toString().padStart(2, '0')}${(date.getDate()).toString().padStart(2, '0')}00&row=406&col=250&lang=pl`;
+		// console.log(link);
+		imgResult = await fetch(link);
 
 		if (!imgResult.ok)
-			throw new Error(`Unexpected response ${result.statusText}`);
-	}
-	else {
+			throw new Error(`Unexpected response ${imgResult.statusText}`);
+	} else {
 		const result = await fetch("https://m.meteo.pl/warszawa/60");
 		if (!result.ok) throw new Error(`Unexpected response ${result.statusText}`);
 		const resultText = await result.text();

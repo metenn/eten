@@ -13,6 +13,7 @@ async function getCount() {
 		return 0;
 	}
 
+	console.log(json.games.ARCADE.modes);
 	return json.games.ARCADE.modes.MINI_WALLS || 0;
 }
 
@@ -41,4 +42,5 @@ export default function startCron() {
 		check
 	);
 	check();
+	job.start();
 }

@@ -433,6 +433,9 @@ async function acceptManager(interaction) {
 	const acceptID = bUids[1];
 	const accept = accepts[acceptID];
 
+	if (accept === undefined)
+		return;
+
 	if (!accept.uids.includes(interaction.user.id))
 		return;
 
