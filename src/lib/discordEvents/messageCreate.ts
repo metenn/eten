@@ -1,6 +1,7 @@
 import { Message } from "discord.js";
 
 import * as jajco from "../jajco";
+import { lettersMap } from "./lettersMap";
 import { hashFile, hashFileFromMessageContent } from "../hashFile";
 import archiwum from "../archiwum";
 import config from "../../config.json";
@@ -47,24 +48,9 @@ export default async function(message: Message) {
 		}
 	}
 
-	if (message.content.toLowerCase() == "h") {
-		message.channel.send(`
-██╗░░██╗
-██║░░██║
-███████║
-██╔══██║
-██║░░██║
-╚═╝░░╚═╝`);
-	}
-	if (message.content.toLowerCase() == "n") {
-		message.channel.send(`
-███╗░░██╗
-████╗░██║
-██╔██╗██║
-██║╚████║
-██║░╚███║
-╚═╝░░╚══╝`);
-	}
+        if (lettersMap.has(message.content.toLowerCase())) {
+                message.channel.send(lettersMap.get(message.content.toLowerCase()));
+        }
 
 	if (message.content.toLowerCase() == "czym do chuja są te cyferki?" || message.content.toLowerCase() == "czym do chuja są te numerki?") {
 		message.reply(`Każda wiadomość ma ID, i jeśli kilka ostatnich cyfr ID twojej wiadomości jest taka sama to eten reaguje odpowiednią liczbą.
