@@ -27,8 +27,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       cron:
-        specifier: ^1.8.2
-        version: 1.8.3
+        specifier: ^3.1.7
+        version: 3.1.7
       discord-player:
         specifier: ^6.6.8
         version: 6.6.8(@discord-player/extractor@4.4.7)(@discordjs/opus@0.9.0)
@@ -57,7 +57,7 @@ importers:
         specifier: ^5.1.2
         version: 5.1.2
       openai:
-        specifier: ^3.1.0
+        specifier: ^3.3.0
         version: 3.3.0
       rss-parser:
         specifier: ^3.12.0
@@ -66,9 +66,6 @@ importers:
         specifier: ^4.11.5
         version: 4.11.5
     devDependencies:
-      '@types/cron':
-        specifier: ^1.7.3
-        version: 1.7.3
       '@types/gm':
         specifier: ^1.25.2
         version: 1.25.4
@@ -78,9 +75,6 @@ importers:
       '@types/node':
         specifier: ^20.12.12
         version: 20.12.12
-      '@types/sharp':
-        specifier: ^0.30.0
-        version: 0.30.5
       '@types/tough-cookie':
         specifier: ^4.0.1
         version: 4.0.5
@@ -171,11 +165,11 @@ packages:
   '@tokenizer/token@0.3.0':
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
 
-  '@types/cron@1.7.3':
-    resolution: {integrity: sha512-iPmUXyIJG1Js+ldPYhOQcYU3kCAQ2FWrSkm1FJPoii2eYSn6wEW6onPukNTT0bfiflexNSRPl6KWmAIqS+36YA==}
-
   '@types/gm@1.25.4':
     resolution: {integrity: sha512-123Spjn7f0eZZOiFlXCiloBRga+uczwAdZOlcgtva+I1h137ADcbC7I5B3SZToQBzYLMokYDlyPxRUozKSQ+Ow==}
+
+  '@types/luxon@3.4.2':
+    resolution: {integrity: sha512-TifLZlFudklWlMBfhubvgqTXRzLDI5pCbGa4P8a3wPyUQSW+1xQ5eDsreP9DWHX3tjq1ke96uYG/nwundroWcA==}
 
   '@types/ms@0.7.34':
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
@@ -185,9 +179,6 @@ packages:
 
   '@types/node@20.12.12':
     resolution: {integrity: sha512-eWLDGF/FOSPtAvEqeRAQ4C8LSA7M1I7i0ky1I8U7kD1J5ITyW3AsRhQrKVoWf5pFKZ2kILsEGJhsI9r93PYnOw==}
-
-  '@types/sharp@0.30.5':
-    resolution: {integrity: sha512-EhO29617AIBqxoVtpd1qdBanWpspk/kD2B6qTFRJ31Q23Rdf+DNU1xlHSwtqvwq1vgOqBwq1i38SX+HGCymIQg==}
 
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
@@ -275,9 +266,8 @@ packages:
   console-control-strings@1.1.0:
     resolution: {integrity: sha512-ty/fTekppD2fIwRvnZAVdeOiGd1c7YXEixbgJTNzqcxJWKQnjJ/V1bNEEE6hygpM3WjwHFUVK6HTjWSzV4a8sQ==}
 
-  cron@1.8.3:
-    resolution: {integrity: sha512-JYR/QZFklJCIPndBLfd/2nU1nSlCMrUdtQ2mGLXSVM/qqqEK7DOrFR0gsEiyeqs0PdWrs0ve1ggH4V7XksDwXg==}
-    deprecated: Breaking dependency change (moved from moment to luxon). Please move to 2.0.0.
+  cron@3.1.7:
+    resolution: {integrity: sha512-tlBg7ARsAMQLzgwqVxy8AZl/qlTc5nibqYwtNGoCrd+cV+ugI+tvZC1oT/8dFH8W455YrywGykx/KMmAqOr7Jw==}
 
   cross-spawn@4.0.2:
     resolution: {integrity: sha512-yAXz/pA1tD8Gtg2S98Ekf/sewp3Lcp3YoFKJ4Hkp5h5yLWnKVTDU0kwjKJ8NDCYcfTLfyGkzTikst+jWypT1iA==}
@@ -473,8 +463,9 @@ packages:
   lru-cache@4.1.5:
     resolution: {integrity: sha512-sWZlbEP2OsHNkXrMl5GYk/jKk70MBng6UU4YI/qGDYbgf6YbP4EvmqISbXCoJiRKs+1bSpFHVgQxvJ17F2li5g==}
 
-  luxon@1.28.1:
-    resolution: {integrity: sha512-gYHAa180mKrNIUJCbwpmD0aTu9kV0dREDrwNnuyFAsO1Wt0EVYSZelPnJlbj9HplzXX/YWXHFTL45kvZ53M0pw==}
+  luxon@3.4.4:
+    resolution: {integrity: sha512-zobTr7akeGHnv7eBOXcRgMeCP6+uyYsczwmeRCauvpvaAltgNyTbLH/+VaEAPUeWBT+1GuNmz4wC/6jtQzbbVA==}
+    engines: {node: '>=12'}
 
   m3u8stream@0.8.6:
     resolution: {integrity: sha512-LZj8kIVf9KCphiHmH7sbFQTVe4tOemb202fWwvJwR9W5ENW/1hxJN6ksAWGhQgSBSa3jyWhnjKU1Fw1GaOdbyA==}
@@ -522,9 +513,6 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
-
-  moment@2.30.1:
-    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
   ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
@@ -923,14 +911,11 @@ snapshots:
 
   '@tokenizer/token@0.3.0': {}
 
-  '@types/cron@1.7.3':
-    dependencies:
-      '@types/node': 17.0.45
-      moment: 2.30.1
-
   '@types/gm@1.25.4':
     dependencies:
       '@types/node': 17.0.45
+
+  '@types/luxon@3.4.2': {}
 
   '@types/ms@0.7.34': {}
 
@@ -939,10 +924,6 @@ snapshots:
   '@types/node@20.12.12':
     dependencies:
       undici-types: 5.26.5
-
-  '@types/sharp@0.30.5':
-    dependencies:
-      '@types/node': 17.0.45
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -1034,9 +1015,10 @@ snapshots:
 
   console-control-strings@1.1.0: {}
 
-  cron@1.8.3:
+  cron@3.1.7:
     dependencies:
-      luxon: 1.28.1
+      '@types/luxon': 3.4.2
+      luxon: 3.4.4
 
   cross-spawn@4.0.2:
     dependencies:
@@ -1276,7 +1258,7 @@ snapshots:
       pseudomap: 1.0.2
       yallist: 2.1.2
 
-  luxon@1.28.1: {}
+  luxon@3.4.4: {}
 
   m3u8stream@0.8.6:
     dependencies:
@@ -1315,8 +1297,6 @@ snapshots:
       yallist: 4.0.0
 
   mkdirp@1.0.4: {}
-
-  moment@2.30.1: {}
 
   ms@2.1.2: {}
 
@@ -1391,7 +1371,7 @@ snapshots:
   prettier@3.2.5: {}
 
   prism-media@1.3.5(@discordjs/opus@0.9.0):
-    dependencies:
+    optionalDependencies:
       '@discordjs/opus': 0.9.0
 
   pseudomap@1.0.2: {}

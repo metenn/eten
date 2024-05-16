@@ -127,7 +127,6 @@ const rotateAvatarJob = new cron.CronJob("0 0 0 * * *", rotateAvatar);
 async function cronImageSend() {
     if (config.cronImageSend.eneabled) {
         // Co? \/
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const imgConfig = await import("../" + config.cronImageSend.images);
 
         for (const image of imgConfig) {
@@ -135,7 +134,6 @@ async function cronImageSend() {
                 image.cron,
                 async function () {
                     for (const img of imgConfig) {
-                        // @ts-expect-error
                         if (img.cron == this.cronTime.source) {
                             await /** @type {import("discord.js").TextChannel} */ (
                                 // @ts-expect-error
