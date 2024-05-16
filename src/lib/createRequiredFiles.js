@@ -1,93 +1,94 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export default function() {
+export default function () {
+    // TMP DIR
 
-	// TMP DIR
+    if (!fs.existsSync("./tmp")) fs.mkdirSync("./tmp");
 
-	if (!fs.existsSync("./tmp"))
-		fs.mkdirSync("./tmp");
+    for (const file of fs.readdirSync("./tmp"))
+        fs.unlinkSync(path.join("./tmp", file));
 
-	for (const file of fs.readdirSync("./tmp"))
-		fs.unlinkSync(path.join("./tmp", file));
+    // SETTINGS
 
-	// SETTINGS
+    if (!fs.existsSync("./data/settings.json"))
+        fs.writeFileSync("./data/settings.json", "{}");
 
-	if (!fs.existsSync("./data/settings.json"))
-		fs.writeFileSync("./data/settings.json", "{}");
+    // const settings = require(`${process.cwd()}/data/settings.json`)
+    const settings = JSON.parse(
+        fs.readFileSync("./data/settings.json", "utf-8"),
+    );
 
-	// const settings = require(`${process.cwd()}/data/settings.json`)
-	const settings = JSON.parse(fs.readFileSync("./data/settings.json", "utf-8"));
+    if (!("jajco" in settings)) settings.jajco = {};
+    if (!("bannedGuilds" in settings.jajco)) settings.jajco.bannedGuilds = [];
+    if (!("bannedUsers" in settings.jajco)) settings.jajco.bannedUsers = [];
 
-	if (!("jajco" in settings))
-		settings.jajco = {};
-	if (!("bannedGuilds" in settings.jajco))
-		settings.jajco.bannedGuilds = [];
-	if (!("bannedUsers" in settings.jajco))
-		settings.jajco.bannedUsers = [];
+    if (!("inspiracja" in settings)) settings.inspiracja = {};
+    if (!("where" in settings.inspiracja)) settings.inspiracja.where = [];
 
-	if (!("inspiracja" in settings))
-		settings.inspiracja = {};
-	if (!("where" in settings.inspiracja))
-		settings.inspiracja.where = [];
+    if (!("pogoda" in settings)) settings.pogoda = {};
+    if (!("where" in settings.pogoda)) settings.pogoda.where = [];
 
-	if (!("pogoda" in settings))
-		settings.pogoda = {};
-	if (!("where" in settings.pogoda))
-		settings.pogoda.where = [];
+    if (!("notices" in settings)) settings.notices = {};
+    if (!("where" in settings.notices)) settings.notices.where = [];
 
-	if (!("notices" in settings))
-		settings.notices = {};
-	if (!("where" in settings.notices))
-		settings.notices.where = [];
+    fs.writeFileSync("./data/settings.json", JSON.stringify(settings));
 
-	fs.writeFileSync("./data/settings.json", JSON.stringify(settings));
+    // RANKINGS
 
-	// RANKINGS
+    if (!fs.existsSync("./data/ranking.json"))
+        fs.writeFileSync("./data/ranking.json", "{}");
 
-	if (!fs.existsSync("./data/ranking.json"))
-		fs.writeFileSync("./data/ranking.json", "{}");
+    // const ranking = require(`${process.cwd()}/data/ranking.json`)
+    const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
+    for (const option of [
+        "pilkarzyki",
+        "kwadraty",
+        "teampilkarzyki",
+        "najdluzszyruch",
+        "najdluzszagrateampilkarzyki",
+        "najdluzszagrapilkarzyki",
+        "sumaruchow",
+        "jajco",
+        "bets",
+        "dubs",
+    ]) {
+        if (!(option in ranking)) ranking[option] = {};
+    }
+    fs.writeFileSync("./data/ranking.json", JSON.stringify(ranking));
 
-	// const ranking = require(`${process.cwd()}/data/ranking.json`)
-	const ranking = JSON.parse(fs.readFileSync("./data/ranking.json", "utf-8"));
-	for (const option of ["pilkarzyki", "kwadraty", "teampilkarzyki", "najdluzszyruch", "najdluzszagrateampilkarzyki", "najdluzszagrapilkarzyki", "sumaruchow", "jajco", "bets", "dubs"]) {
-		if (!(option in ranking))
-			ranking[option] = {};
-	}
-	fs.writeFileSync("./data/ranking.json", JSON.stringify(ranking));
+    // USER SETTINGS
 
-	// USER SETTINGS
+    if (!fs.existsSync("./data/userSettings.json"))
+        fs.writeFileSync("./data/userSettings.json", "{}");
 
-	if (!fs.existsSync("./data/userSettings.json"))
-		fs.writeFileSync("./data/userSettings.json", "{}");
+    // HASHES
 
-	// HASHES
+    if (!fs.existsSync("./data/hashes.json"))
+        fs.writeFileSync("./data/hashes.json", "{}");
 
-	if (!fs.existsSync("./data/hashes.json"))
-		fs.writeFileSync("./data/hashes.json", "{}");
+    // BETS
 
-	// BETS
+    if (!fs.existsSync("./data/bets.json"))
+        fs.writeFileSync("./data/bets.json", "{}");
 
-	if (!fs.existsSync("./data/bets.json"))
-		fs.writeFileSync("./data/bets.json", "{}");
+    // PREDICTIONS
 
-	// PREDICTIONS
+    if (!fs.existsSync("./data/predictions.json"))
+        fs.writeFileSync("./data/predictions.json", '{"bets": {}}');
 
-	if (!fs.existsSync("./data/predictions.json"))
-		fs.writeFileSync("./data/predictions.json", "{\"bets\": {}}");
+    // INFO
 
-	// INFO
+    if (!fs.existsSync("./data/info.json"))
+        fs.writeFileSync("./data/info.json", '{"uptimeCron": ""}');
 
-	if (!fs.existsSync("./data/info.json"))
-		fs.writeFileSync("./data/info.json", "{\"uptimeCron\": \"\"}");
+    // MUSIC
 
-	// MUSIC
+    if (!fs.existsSync("./data/music.json"))
+        fs.writeFileSync("./data/music.json", "{}");
 
-	if (!fs.existsSync("./data/music.json"))
-		fs.writeFileSync("./data/music.json", "{}");
+    // KNOWN NOTICES FOR RESTARTS
 
-	// KNOWN NOTICES FOR RESTARTS
-
-	if (!fs.existsSync("./data/globalKnownNotices.json"))
-		fs.writeFileSync("./data/globalKnownNotices.json", "{}");
+    if (!fs.existsSync("./data/globalKnownNotices.json"))
+        fs.writeFileSync("./data/globalKnownNotices.json", "{}");
 }

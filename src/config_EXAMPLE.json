@@ -1,101 +1,106 @@
 {
-	"prefix": "!",
-	"token": "YourBotTokenGoesHere",
+    "prefix": "!",
+    "token": "YourBotTokenGoesHere",
 
-	"openAI": {
-		"apiToken": "your openAI api token",
-		"organizationId": "your openAI organization token"
-	},
+    "openAI": {
+        "apiToken": "your openAI api token",
+        "organizationId": "your openAI organization token"
+    },
 
-	"chatGPT": {
-		"eneabled": true,
-		"email": "your_chat_gpt_email",
-		"password": "your_chat_gpt_password",
-		"session_token": "your_session_token (see: https://github.com/acheong08/ChatGPT/wiki/Setup ) (not required?)"
-	},
+    "chatGPT": {
+        "eneabled": true,
+        "email": "your_chat_gpt_email",
+        "password": "your_chat_gpt_password",
+        "session_token": "your_session_token (see: https://github.com/acheong08/ChatGPT/wiki/Setup ) (not required?)"
+    },
 
-	"pythonPort": "2137",
+    "pythonPort": "2137",
 
-	"librus": true,
-	"librusLogin": "user@domain.tld",
-	"librusPass": "password",
-	"pushDevice": "12345678",
+    "librus": true,
+    "librusLogin": "user@domain.tld",
+    "librusPass": "password",
+    "pushDevice": "12345678",
 
-	"hyixelApiKey": "gaming",
-	"miniwallsChannel": "2137",
+    "hyixelApiKey": "gaming",
+    "miniwallsChannel": "2137",
 
-	"adminID": ["admin1 user id", "admin2 user id"],
+    "adminID": ["admin1 user id", "admin2 user id"],
 
-	"geniusAPIKey": "genius API key (leave empty if you dont want to use /lyrics)",
+    "geniusAPIKey": "genius API key (leave empty if you dont want to use /lyrics)",
 
-	"guild": "guild id",
+    "guild": "guild id",
 
-	"playRandomSoundeffects": true,
-	"randomSoundeffectChance": 0.005,
+    "playRandomSoundeffects": true,
+    "randomSoundeffectChance": 0.005,
 
-	"bets": {
-		"eneabled": "true",
-		"guild": "guild id",
-		"channel": "channel id"
-	},
+    "bets": {
+        "eneabled": "true",
+        "guild": "guild id",
+        "channel": "channel id"
+    },
 
-	"autoMemesChannel": "channel id",
-	"allowedBoardsForTracking": {
-		"wsg": "/wsg/ - Worksafe Gif",
-		"g": "/g/ - Technology",
-		"v": "/v/ - Video Games",
-		"int": "/int/ - International"
-	},
+    "autoMemesChannel": "channel id",
+    "allowedBoardsForTracking": {
+        "wsg": "/wsg/ - Worksafe Gif",
+        "g": "/g/ - Technology",
+        "v": "/v/ - Video Games",
+        "int": "/int/ - International"
+    },
 
-	"cronWeather": [
-		{
-			"title": "Warszawa",
-			"link": "https://m.meteo.pl/warszawa/60"
-		}
-	],
+    "cronWeather": [
+        {
+            "title": "Warszawa",
+            "link": "https://m.meteo.pl/warszawa/60"
+        }
+    ],
 
-	"cronImageSend": {
-		"eneabled": false,
-		"images": "cronImageSend_EXAMPLE.json",
-		"guild": "guild id",
-		"channel": "channel id"
-	},
+    "cronImageSend": {
+        "eneabled": false,
+        "images": "cronImageSend_EXAMPLE.json",
+        "guild": "guild id",
+        "channel": "channel id"
+    },
 
-	"archiwum": {
-		"eneabled": false,
-		"channel": "channel id",
-		"guild": "guild id",
-		"uploadURL": "http://your.website.com/upload",
-		"uploadPassword": "password"
-	},
+    "archiwum": {
+        "eneabled": false,
+        "channel": "channel id",
+        "guild": "guild id",
+        "uploadURL": "http://your.website.com/upload",
+        "uploadPassword": "password"
+    },
 
-	"pilkarzykiBot": {
-		"maxDepth": 5,
-		"evaluationFunctionConfig": [
-			{
-				"condition": "depth==1",
-				"path": [
-					"../../evaluationFunctions/evaluationBFS.js",
-					"../../evaluationFunctions/evaluationBFSCubic.js",
-					"../../evaluationFunctions/evaluationQuad.js"
-				]
-			},
-			{
-				"condition": "depth==2",
-				"path": [
-					"../../evaluationFunctions/evaluationBFS.js", "../../evaluationFunctions/evaluationBFSReverse.js",
-					"../../evaluationFunctions/evaluationBFSCubic.js", "../../evaluationFunctions/evaluationBFSCubicReverse.js",
-					"../../evaluationFunctions/evaluationQuad.js"
-				]
-			},
-			{
-				"condition": "depth==3",
-				"path": ["../../evaluationFunctions/evaluationQuad.js", "../../evaluationFunction/evaluationQuadReverse.js"]
-			},
-			{
-				"condition": "depth>3",
-				"path": ["../../evaluationFunctions/evaluationBFSCubic.js"]
-			}
-		]
-	}
+    "pilkarzykiBot": {
+        "maxDepth": 5,
+        "evaluationFunctionConfig": [
+            {
+                "condition": "depth==1",
+                "path": [
+                    "../../evaluationFunctions/evaluationBFS.js",
+                    "../../evaluationFunctions/evaluationBFSCubic.js",
+                    "../../evaluationFunctions/evaluationQuad.js"
+                ]
+            },
+            {
+                "condition": "depth==2",
+                "path": [
+                    "../../evaluationFunctions/evaluationBFS.js",
+                    "../../evaluationFunctions/evaluationBFSReverse.js",
+                    "../../evaluationFunctions/evaluationBFSCubic.js",
+                    "../../evaluationFunctions/evaluationBFSCubicReverse.js",
+                    "../../evaluationFunctions/evaluationQuad.js"
+                ]
+            },
+            {
+                "condition": "depth==3",
+                "path": [
+                    "../../evaluationFunctions/evaluationQuad.js",
+                    "../../evaluationFunction/evaluationQuadReverse.js"
+                ]
+            },
+            {
+                "condition": "depth>3",
+                "path": ["../../evaluationFunctions/evaluationBFSCubic.js"]
+            }
+        ]
+    }
 }
