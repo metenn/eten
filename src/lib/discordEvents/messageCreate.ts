@@ -1,7 +1,7 @@
 import { Message } from "discord.js";
 
 import * as jajco from "../jajco";
-import { lettersMap } from "./lettersMap";
+import { lettersMap } from "../lettersMap";
 import { hashFile, hashFileFromMessageContent } from "../hashFile";
 import archiwum from "../archiwum";
 import config from "../../config.json";
