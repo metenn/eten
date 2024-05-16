@@ -23,5 +23,7 @@ jobs:
         run: pnpm install
       - name: Install dependencies
         run: pnpm install
+      - name: Create mock config
+        run: cp src/config_EXAMPLE.json src/config.json
       - name: Typecheck
         run: pnpm run typecheck

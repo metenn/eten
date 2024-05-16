@@ -28,7 +28,13 @@
 
     "geniusAPIKey": "genius API key (leave empty if you dont want to use /lyrics)",
 
+    "hypixelApiKey": "hypixel API key",
+
     "guild": "guild id",
+    "junkChannel": {
+        "guild": "junk channel guild id",
+        "channel": "junk channel id"
+    },
 
     "playRandomSoundeffects": true,
     "randomSoundeffectChance": 0.005,
